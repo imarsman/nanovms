@@ -1,2 +1,2 @@
-# novavms
-Test of novavms
+# nanovms
+Test of nanovms with Golang

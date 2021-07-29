@@ -2,12 +2,49 @@
 
 version: '3'
 
+env:
+  # Need credentials for Google if using GCP
+  applinux: nanoapplinux
+  nativeapp: nanoappnative
+  imagename: nanovms-transactions-image
+  configpath: ./config/config.json
+  cloud: gcp
+  port: 8000
+
 dotenv: ['.ENV']
 
 tasks:
   build:
+    desc: build native and linux for running in novavms
     dir: ./app
     cmds:
       - pwd
-      - GOOS=linux go build -o ../builds/nanoapp main.go
-      - chmod 755 ../builds/nanoapp
+      - GOOS=linux go build -o ../builds/{{.applinux}} main.go
+      - go build -o ../builds/{{.nativeapp}} main.go
+  run-locally:
+    desc: run locally using ops
+    dir: ./builds
+    cmds:
+      - task: build
+      - ops run -p 8000 ./nanoapplinux
+  create-image:
+    desc: create image in cloud
+    dir: ./builds
+    cmds:
+      - ops image create {{.applinux}} -c {{.configpath}} -i {{.imagename}} -t {{.cloud}}
+  delete-image:
+    cmds:
+      - ops delete image {{.imagename}}
+  create-instance:
+    desc: create an instance in cloud
+    cmds:
+      - task: create-image
+      - ops instance create {{.imagename}} -t {{.cloud}} -c {{.configpath}}
+  delete-instance:
+    desc: delete a remote instance {{.imagename}}
+    cmds:
+      - ops instance delete 
+  list-instances:
+    desc: list instances in cloud
+    cmds:
+      - ops instance list -t {{.cloud}} -c {{.configpath}}

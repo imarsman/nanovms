@@ -1,0 +1,28 @@
+
+{
+"transactions": [
+    {"id": 1, "amount": 300, "message_type": "Debit", "created_at": "2020-06-11T19:11:24+00:00", "transaction_id": 10, "transaction_category": "Grocery", "posted_timestamp": "2020-06-11T19:11:24+00:00", "transaction_type": "POS", "sending_account": 1234, "receiving_account": 3877, "transaction_note": "Merchant 0003857"},
+    
+    {"id": 2, "amount": 499, "message_type": "Credit", "created_at": "2020-06-11T19:11:24+00:00", "transaction_id": 12, "transaction_category": "Food and Beverage", "posted_timestamp": "2020-06-11T19:11:24+00:00", "transaction_type": "POS", "sending_account": 5678, "receiving_account": 9987, "transaction_note": "Buthcart Gardens"},
+    
+    {"id": 3, "amount": 20000, "message_type": "Debit", "created_at": "2020-06-11T19:11:24+00:00", "transaction_id": 17, "transaction_category": "ATM", "posted_timestamp": "2020-06-11T19:11:24+00:00", "transaction_type": "POS", "sending_account": 1456, "receiving_account": 9277, "transaction_note": "ATM #8789999 Jon Street"},
+    
+    {"id": 4, "amount": 8839, "message_type": "Debit", "created_at": "2020-06-11T19:11:24+00:00", "transaction_id": 10, "transaction_category": "Automotive", "posted_timestamp": "2020-06-11T19:11:24+00:00", "transaction_type": "POS", "sending_account": 3456, "receiving_account": 3986, "transaction_note": "Parts Parts Parts"},
+   
+    {"id": 5, "amount": 6173, "message_type": "Debit", "created_at": "2020-06-21T20:11:24+00:00", "transaction_id": 21, "transaction_category": "Household", "posted_timestamp": "2020-06-21T20:11:24+00:00", "transaction_type": "POS", "sending_account": 2786, "receiving_account": 9855, "transaction_note": "Large Vendor"
+    },
+
+    {"id": 6, "amount": 9018, "message_type": "Debit", "created_at": "2020-06-14T21:11:24+00:00", "transaction_id": 33, "transaction_category": "Electronics", "posted_timestamp": "2020-06-14T21:11:24+00:00", "transaction_type": "POS", "sending_account": 8937, "receiving_account": 3111, "transaction_note": "Online retailer"
+    },
+
+    {"id": 7, "amount": 1275, "message_type": "Debit", "created_at": "2020-06-09T11:11:24+00:00", "transaction_id": 12, "transaction_category": "Cryptocurrency", "posted_timestamp": "2020-06-09T11:11:24+00:00", "transaction_type": "POS", "sending_account": 5482, "receiving_account": 3876, "transaction_note": "Colm Inc."
+    },
+
+    {"id": 8, "amount": 2167, "message_type": "Debit", "created_at": "2020-06-18T15:11:24+00:00", "transaction_id": 44, "transaction_category": "Food and Beverage", "posted_timestamp": "2020-06-18T15:11:24+00:00", "transaction_type": "POS", "sending_account": 6346, "receiving_account": 3845, "transaction_note": "Sushi Plus Ltd."},
+    
+    {"id": 9, "amount": 3178, "message_type": "Debit", "created_at": "2020-05-01T14:11:24+00:00", "transaction_id": 90, "transaction_category": "Internet Services", "posted_timestamp": "2020-05-01T14:11:24+00:00", "transaction_type": "POS", "sending_account": 8937, "receiving_account": 8346, "transaction_note": "PayNow Inc."},
+
+    {"id": 10, "amount": 7718, "message_type": "Debit", "created_at": "2020-07-11T19:11:24+00:00", "transaction_id": 109, "transaction_category": "Health Services", "posted_timestamp": "2020-07-11T19:11:25+00:00", "transaction_type": "POS", "sending_account": 8472, "receiving_account": 7362, "transaction_note": "Janettes Esthetics"
+    }
+]
+}

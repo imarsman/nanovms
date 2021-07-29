@@ -7,4 +7,7 @@ The goal of this small project is to explore the use of the ops and nanovms
 unikernel to deploy as an instance image on a cloud platform. I am using GCP in
 this instance. Although it may run as compiled it is not ready to deploy.
 
+I would like to explore both deployment as a standalone image and as an image in
+a scaleable cluster.
+
 See https://nanovms.com

@@ -1,0 +1,13 @@
+# Taskfile.yml
+
+version: '3'
+
+dotenv: ['.ENV']
+
+tasks:
+  build:
+    dir: ./app
+    cmds:
+      - pwd
+      - GOOS=linux go build -o ../builds/nanoapp main.go
+      - chmod 755 ../builds/nanoapp

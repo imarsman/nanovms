@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ func TestReadJSON(t *testing.T) {
 
 	is.True(1 == 1)
 
-	transactions, err := ReadTransactions()
+	transactions, err := readTransactions()
 	is.NoErr(err)
 
 	t.Log(len(transactions.Transactions))
@@ -27,7 +27,7 @@ func TestReadJSON(t *testing.T) {
 // TestSort test sort of transactions by post timestamp
 func TestSort(t *testing.T) {
 	is := is.New(t)
-	transactions, err := ReadTransactions()
+	transactions, err := readTransactions()
 	is.NoErr(err)
 
 	sortDescendingPostTimestamp(&transactions)
@@ -41,7 +41,7 @@ func TestSort(t *testing.T) {
 
 func TestToJSON(t *testing.T) {
 	is := is.New(t)
-	transactions, err := ReadTransactions()
+	transactions, err := readTransactions()
 	is.NoErr(err)
 
 	sortDescendingPostTimestamp(&transactions)
@@ -52,7 +52,7 @@ func TestToJSON(t *testing.T) {
 func TestObscurePAN(t *testing.T) {
 	is := is.New(t)
 
-	transactions, err := ReadTransactions()
+	transactions, err := readTransactions()
 	is.NoErr(err)
 
 	transactions, err = obscureTransactionID(transactions)

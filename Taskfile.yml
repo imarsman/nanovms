@@ -1,5 +1,10 @@
 # Taskfile.yml
 
+# See https://nanovms.gitbook.io/ops/google_cloud for ops commands
+
+# This taskfile will enable local building of the application, building of an
+# ops image, and cloud deployment management.
+
 version: '3'
 
 env:
@@ -26,7 +31,7 @@ tasks:
     dir: ./builds
     cmds:
       - task: build
-      - ops run -p 8000 ./nanoapplinux
+      - ops run -p {{.port}} ./nanoapplinux &
   create-image:
     desc: create image in cloud
     dir: ./builds
@@ -40,6 +45,7 @@ tasks:
     cmds:
       - task: create-image
       - ops instance create {{.imagename}} -t {{.cloud}} -c {{.configpath}}
+      - echo "You can access the instance at the IP listed on port {{.port}}
   delete-instance:
     desc: delete a remote instance {{.imagename}}
     cmds:
@@ -48,3 +54,8 @@ tasks:
     desc: list instances in cloud
     cmds:
       - ops instance list -t {{.cloud}} -c {{.configpath}}
+  test-instance:
+    desc: Test deployed cloud instance
+    cmds:
+      - task: create-instance
+      - curl http://127.0.0.1:{{.port}}/transactions

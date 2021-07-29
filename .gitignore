@@ -21,3 +21,4 @@ build/config/env/nanovms-*.json
 build/config/env/.ENV
 build/config/config.json
 build/config/config.json
+app/.context

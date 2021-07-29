@@ -24,6 +24,8 @@ var context string
 //go:embed static/** static/css/**
 var static embed.FS
 
+var router *mux.Router
+
 // TransactionList a list of transactions. Allows for JSON list to be read
 type TransactionList struct {
 	Transactions []Transaction `json:"transactions"`
@@ -43,6 +45,15 @@ type Transaction struct {
 	ReceivingAccount    int    `json:"receiving_account"`
 	TransactionNote     string `json:"transaction_note"`
 }
+
+// func init() {
+// 	router = mux.NewRouter().StrictSlash(true)
+
+// 	// Handle static content
+// 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static")))).Name("Documentation")
+// 	router.HandleFunc("/transactions", GetTransactionsHandler).Methods("GET").Name("Sample transactions")
+// 	router.HandleFunc("/help", RoutesHandler).Methods("GET").Name("Show routes available")
+// }
 
 // obscureTransactionID obsure PAN attribute
 func obscureTransactionID(transactionlist TransactionList) (TransactionList, error) {
@@ -65,35 +76,6 @@ func obscureTransactionID(transactionlist TransactionList) (TransactionList, err
 	}
 
 	return newTrans, nil
-}
-
-// GetTransactions get list of transactions
-func GetTransactions(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json")
-	transactionList, err := readTransactions()
-	if err != nil { // simulate error getting data
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	sortDescendingPostTimestamp(&transactionList)
-
-	// obscured, err := obscured(transactions)
-	transactionList, err = obscureTransactionID(transactionList) // allow for error
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	json, err := toJSON(transactionList)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(json))
 }
 
 // readTransactions read sample transactions set from JSON file
@@ -136,12 +118,6 @@ func toJSON(transactions TransactionList) (string, error) {
 
 // Main method for app. A simple router and a simple handler.
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
-
-	// Handle static content
-	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static"))))
-	router.HandleFunc("/transactions", GetTransactions).Methods("GET")
-
 	port := "8000"
 	if context == "cloud" {
 		port = "80"

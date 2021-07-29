@@ -2,6 +2,7 @@ package main
 
 import (
 	// embed
+	"embed"
 	_ "embed"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,12 @@ import (
 
 //go:embed transactions.json
 var transactionJSON string
+
+//go:embed .context
+var context string
+
+//go:embed static/** static/css/**
+var static embed.FS
 
 // TransactionList a list of transactions. Allows for JSON list to be read
 type TransactionList struct {
@@ -130,8 +137,16 @@ func toJSON(transactions TransactionList) (string, error) {
 // Main method for app. A simple router and a simple handler.
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
+
+	// Handle static content
+	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static"))))
 	router.HandleFunc("/transactions", GetTransactions).Methods("GET")
 
-	fmt.Printf("Serving transactions on port 8000")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	port := "8000"
+	if context == "cloud" {
+		port = "80"
+	}
+
+	fmt.Println("Serving transactions on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }

@@ -2,6 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/matryer/is"
@@ -65,5 +68,26 @@ func TestObscurePAN(t *testing.T) {
 	t.Log("Transactions in set")
 	for i, v := range transactions.Transactions {
 		t.Logf("%d %+v", i, v)
+	}
+}
+
+// TestEmbeddedFS test for files in embedded FS
+func TestEmbeddedFS(t *testing.T) {
+	is := is.New(t)
+
+	for _, name := range []string{"static"} {
+		t.Logf("Filesystem \"%s\"", name)
+		err := filepath.Walk(name,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() == false {
+					fmt.Println(path, info.Size(), "bytes")
+				}
+				return nil
+			})
+
+		is.NoErr(err)
 	}
 }

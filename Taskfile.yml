@@ -24,7 +24,9 @@ tasks:
     desc: build native and linux apps for running in novavms
     dir: ./app
     cmds:
+      - echo "local" > .context
       - GOOS=linux go build -o ../builds/{{.applinux}} main.go
+      - echo "cloud" > .context
       - go build -o ../builds/{{.nativeapp}} main.go
   run-locally:
     desc: run locally using ops

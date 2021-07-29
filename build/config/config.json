@@ -1,11 +1,12 @@
 {
     "CloudConfig": {
+        "Flavor": "e2-micro",
         "ProjectID": "novavms",
         "Zone": "us-east1-b",
         "BucketName": "novavms"
     },
     "RunConfig": {
-        "Memory": "1G",
+        "Memory": "500M",
         "Ports": [8000]
     }
 }

@@ -16,14 +16,14 @@ env:
   cloud: gcp
   port: 8000
 
+# If running with pre-set environment variables do not run the dotenv
 dotenv: ['.ENV']
 
 tasks:
   build:
-    desc: build native and linux for running in novavms
+    desc: build native and linux apps for running in novavms
     dir: ./app
     cmds:
-      - pwd
       - GOOS=linux go build -o ../builds/{{.applinux}} main.go
       - go build -o ../builds/{{.nativeapp}} main.go
   run-locally:
@@ -39,6 +39,8 @@ tasks:
       - ops image create {{.applinux}} -c {{.configpath}} -i {{.imagename}} -t {{.cloud}}
   delete-image:
     cmds:
+      # Note: requires GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_CLOUD_PROJECT, and
+      # GOOGLE_CLOUD_ZONE environment variables
       - ops delete image {{.imagename}}
   create-instance:
     desc: create an instance in cloud

@@ -1,0 +1,12 @@
+{
+    "CloudConfig": {
+        "Flavor": "e2-micro",
+        "ProjectID": "",
+        "Zone": "us-east1-b",
+        "BucketName": "images"
+    },
+    "RunConfig": {
+        "Memory": "500M",
+        "Ports": [8000]
+    }
+}

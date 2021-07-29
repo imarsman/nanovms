@@ -13,5 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-.ENV
 builds/nanoapp
+env/.env
+env/*json
+builds/nanoapplinux

@@ -1,0 +1,11 @@
+{
+    "CloudConfig": {
+        "ProjectID": "novavms",
+        "Zone": "us-east1-b",
+        "BucketName": "novavms"
+    },
+    "RunConfig": {
+        "Memory": "1G",
+        "Ports": [8000]
+    }
+}

@@ -8,7 +8,7 @@ unikernel to deploy as an instance image on a cloud platform. I am using GCP in
 this case. Although it may run as compiled it is not ready to deploy yet.
 
 I would like to explore both deployment as a standalone image and as an image in
-a scaleable cluster.
+a managed instance cluster.
 
 See https://nanovms.com
 

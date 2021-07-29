@@ -4,6 +4,7 @@ import (
 	// embed
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,8 +14,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-////go:embed transactions.json
-var transactions string
+//go:embed transactions.json
+var transactionJSON string
 
 // TransactionList a list of transactions. Allows for JSON list to be read
 type TransactionList struct {
@@ -91,9 +92,12 @@ func GetTransactions(w http.ResponseWriter, r *http.Request) {
 // readTransactions read sample transactions set from JSON file
 func readTransactions() (TransactionList, error) {
 
+	if transactionJSON == "" {
+		return TransactionList{}, errors.New("Could not load transactions")
+	}
 	var transactionList TransactionList
 
-	json.Unmarshal([]byte(transactions), &transactionList)
+	json.Unmarshal([]byte(transactionJSON), &transactionList)
 
 	return transactionList, nil
 }

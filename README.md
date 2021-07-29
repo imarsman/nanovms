@@ -11,3 +11,14 @@ I would like to explore both deployment as a standalone image and as an image in
 a scaleable cluster.
 
 See https://nanovms.com
+
+## Sample run
+
+```
+ops run -p 8000 ./nanoapplinux
+ 100% |████████████████████████████████████████|  [0s:0s]
+ 100% |████████████████████████████████████████|  [0s:0s]
+booting /Users/ian/.ops/images/nanoapplinux.img ...
+en1: assigned 10.0.2.15
+Serving transactions on port 8000en1: assigned FE80::D809:D5FF:FE5A:637B
+```

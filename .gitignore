@@ -17,3 +17,5 @@ builds/nanoapp
 env/.env
 env/*json
 builds/nanoapplinux
+build/config/env/novavms-898c57931dd9.json
+build/config/env/.ENV

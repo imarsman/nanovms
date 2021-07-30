@@ -1,8 +1,6 @@
 # A Taskfile
 # See https://taskfile.dev/
 
-# Taskfile.yml
-
 # See https://nanovms.gitbook.io/ops/google_cloud for ops commands
 
 # This taskfile will enable local building of the application, building of an
@@ -10,59 +8,74 @@
 
 version: '3'
 
-env:
-  # Need credentials for Google if using GCP
+vars:
+  basepath:
+    sh: pwd
+  configpath: '{{.basepath}}/build/config/config.json'
   applinux: nanoapplinux
   nativeapp: nanoappnative
-  imagename: nanovms-transactions-image
-  configpath: ./config/config.json
+  imagename: nanovms-test-image
   cloud: gcp
-  port: 8000
+  localport: 8000
+  cloudport: 8000
 
 # If running with pre-set environment variables do not run the dotenv
-dotenv: ['.ENV']
+dotenv: ['./build/config/env/.ENV']
 
 tasks:
   build:
     desc: build native and linux apps for running in novavms
     dir: ./app
     cmds:
-      - echo "local" > .context
-      - GOOS=linux go build -o ../builds/{{.applinux}} main.go
       - echo "cloud" > .context
-      - go build -o ../builds/{{.nativeapp}} main.go
+      - GOOS=linux go build -o {{.basepath}}/build/{{.applinux}} main.go
+      - echo "local" > .context
+      - go build -o {{.basepath}}/build/{{.nativeapp}} main.go
   run-locally:
     desc: run locally using ops
-    dir: ./builds
+    dir: ./build
     cmds:
       - task: build
-      - ops run -p {{.port}} ./nanoapplinux &
-  create-image:
-    desc: create image in cloud
-    dir: ./builds
+      - ops run -p {{.localport}} ./nanoapplinux
+  list-images:
+    desc: list images
     cmds:
+      - ops image list
+      # - ops image list -t {{.cloud}} -c {{.configpath}}
+  create-image:
+    desc: create image locally
+    dir: ./build
+    cmds:
+      # - task: build
       - ops image create {{.applinux}} -c {{.configpath}} -i {{.imagename}} -t {{.cloud}}
   delete-image:
+    desc: delete the image
     cmds:
       # Note: requires GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_CLOUD_PROJECT, and
       # GOOGLE_CLOUD_ZONE environment variables
-      - ops delete image {{.imagename}}
+      - ops image delete {{.imagename}}.img
   create-instance:
     desc: create an instance in cloud
     cmds:
-      - task: create-image
+      # - task: create-image
       - ops instance create {{.imagename}} -t {{.cloud}} -c {{.configpath}}
-      - echo "You can access the instance at the IP listed on port {{.port}}
+      - echo "You can access the instance at the IP listed on port {{.cloudport}}"
   delete-instance:
     desc: delete a remote instance {{.imagename}}
     cmds:
-      - ops instance delete 
+      - ops instance delete {{.imagename}}
   list-instances:
     desc: list instances in cloud
     cmds:
       - ops instance list -t {{.cloud}} -c {{.configpath}}
+      # - ops instance list -t {{.cloud}} -c {{.configpath}}
+  firewall-allow-http:
+    desc: allow http port access
+    cmds:
+      - gcloud compute firewall-rules create http_allow --allow tcp:80,tcp:443,tcp:8000
+      # - gcloud compute instances add-tags nanovms-test-image-1627604881 --tags http-server,https-server
   test-instance:
     desc: Test deployed cloud instance
     cmds:
       - task: create-instance
-      - curl http://127.0.0.1:{{.port}}/transactions
+      - curl http://127.0.0.1:{{.localport}}/transactions

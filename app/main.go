@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -24,7 +24,13 @@ var context string
 //go:embed static/** static/css/**
 var static embed.FS
 
-var router *mux.Router
+// var router *mux.Router
+
+const (
+	jsonContentType     = "application/json; charset=utf-8"
+	markdownContentType = "text/markdown; charset=utf-8"
+	textContentType     = "text/plain; charset=utf-8"
+)
 
 // TransactionList a list of transactions. Allows for JSON list to be read
 type TransactionList struct {
@@ -116,13 +122,63 @@ func toJSON(transactions TransactionList) (string, error) {
 	return string(bytes), nil
 }
 
-// Main method for app. A simple router and a simple handler.
-func main() {
-	port := "8000"
-	if context == "cloud" {
-		port = "80"
+// GetTransactionsHandler get list of transactions
+func GetTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", jsonContentType)
+	transactionList, err := readTransactions()
+	if err != nil { // simulate error getting data
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	fmt.Println("Serving transactions on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	sortDescendingPostTimestamp(&transactionList)
+
+	// obscured, err := obscured(transactions)
+	transactionList, err = obscureTransactionID(transactionList) // allow for error
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json, err := toJSON(transactionList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(json))
+}
+
+// Main method for app. A simple router and a simple handler.
+func main() {
+	infiniteWait := make(chan string)
+
+	cloud := strings.TrimSpace(context) == "cloud"
+	fmt.Println("context", context, "cloud", cloud)
+
+	router := mux.NewRouter().StrictSlash(true)
+
+	// Sample JSON returning function
+	router.HandleFunc("/transactions", GetTransactionsHandler).Methods(http.MethodGet).Name("Sample transactions")
+
+	staticDir := "/"
+
+	// Handle static content
+	router.PathPrefix(staticDir).Handler(http.StripPrefix(staticDir, http.FileServer(http.Dir("./static")))).Name("Documentation")
+
+	if cloud {
+		go func() {
+			fmt.Println("Serving transactions on port", "80")
+			http.ListenAndServe(":80", router)
+		}()
+	} else {
+		go func() {
+			fmt.Println("Serving transactions on port", "8000")
+			http.ListenAndServe(":8000", router)
+		}()
+	}
+
+	<-infiniteWait
 }

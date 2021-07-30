@@ -50,15 +50,6 @@ type Transaction struct {
 	TransactionNote     string `json:"transaction_note"`
 }
 
-// func init() {
-// 	router = mux.NewRouter().StrictSlash(true)
-
-// 	// Handle static content
-// 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static")))).Name("Documentation")
-// 	router.HandleFunc("/transactions", GetTransactionsHandler).Methods("GET").Name("Sample transactions")
-// 	router.HandleFunc("/help", RoutesHandler).Methods("GET").Name("Show routes available")
-// }
-
 // obscureTransactionID obsure PAN attribute
 func obscureTransactionID(transactionlist TransactionList) (TransactionList, error) {
 	newTrans := TransactionList{}
@@ -148,26 +139,6 @@ func GetTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(json))
 }
-
-// func getFileSystem(useOS bool) http.FileSystem {
-// 	var fsys fs.FS
-// 	if useOS {
-// 		fmt.Println("using live mode")
-// 		fsys = os.DirFS("static")
-// 	} else {
-// 		fmt.Println("using embed mode")
-// 		var (
-// 			//go:embed static
-// 			files embed.FS
-// 			err   error
-// 		)
-// 		fsys, err = fs.Sub(files, "static")
-// 		if err != nil {
-// 			fmt.Println("error", err)
-// 		}
-// 	}
-// 	return http.FS(fsys)
-// }
 
 // Main method for app. A simple router and a simple handler.
 func main() {

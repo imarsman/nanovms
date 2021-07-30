@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My New Website</title>
 
-    <link rel="stylesheet" href="./static/css/simple.min.css">
+    <link rel="stylesheet" href="./css/simple.min.css">
 </head>
 <body>
     <header>
@@ -14,7 +14,40 @@
     </header>
 
     <p>
-        Nanovms is a unikernel which can run a single process.
+        Nanovms is a unikernel which can run a single process. Wikipedia <a
+        href="https://en.wikipedia.org/wiki/Unikernel">defines</a> a unikernel
+        as 
+        <blockquote>
+            A unikernel is a specialised, single address space machine image
+            constructed by using library operating systems. A developer selects,
+            from a modular stack, the minimal set of libraries which correspond
+            to the OS constructs required for the application to run. These
+            libraries are then compiled with the application and configuration
+            code to build sealed, fixed-purpose images (unikernels) which run
+            directly on a hypervisor or hardware without an intervening OS such
+            as Linux or Windows.
+        </blockquote>
+    </p>
+    <p>
+    <a href="https://www.nanovms.com">Nanos</a> has build an open source
+        unikernel and provided a <a href="https://nanovms.gitbook.io/ops/">tool</a>
+        called ops to allor for the building of a unikernel and deployment on a
+        growing list of cloud platforms.
+    </p>
+    <p>
+        The purpose of this project is to experiment with the feasibility of
+        deploying and updating unikernels in the Google Cloud Platform in a
+        similar way to Docker with Kubernetes or with AWS Fargate. It is hoped
+        that instances can be clustered and scaled using the services provided
+        by providers such as Google and AWS.
+    </p>
+    <p>
+        Currently the ops tool has been found to be capable of using a Linux
+        targetted build of a simple app and putting it in the Google cloud to
+        run in a small instance. There are some issues related to doing things
+        like allowing HTTP ports to be used for instances which are likely due
+        to my own lack of experience rather than underlying issues with the
+        available tools.
     </p>
 
     <footer>

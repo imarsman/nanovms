@@ -171,12 +171,12 @@ func main() {
 	// effort than is currently warrrented. May revisit.
 	if cloud {
 		go func() {
-			fmt.Println("Running in cloud mode. Serving transactions on port", "8000", "cloud", cloud)
+			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
 		}()
 	} else {
 		go func() {
-			fmt.Println("Running locally. Serving transactions on port", "8000", "cloud", cloud)
+			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
 		}()
 	}

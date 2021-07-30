@@ -33,8 +33,6 @@ tasks:
     #   instanceid: 
     #     sh: $(echo "ops instance list -t {{.cloud}} -c {{.configpath}}")
     cmds:
-      # - gcloud filestore instances list --project=nanovms-321303
-      # - echo "instanceid {{.instanceid}}"
       # Use of embed to flag context - used for port use
       - echo "cloud" > .context
       - GOOS=linux go build .
@@ -68,6 +66,7 @@ tasks:
       - ops image delete {{.imagename}}.img
       - ops image delete {{.imagename}}
   create-instance:
+    # There are problems here with Google complaining of a pre-existing image
     desc: create an instance in cloud
     cmds:
       # - task: create-image
@@ -81,7 +80,6 @@ tasks:
     desc: list instances in cloud
     cmds:
       - ops instance list -t {{.cloud}} -c {{.configpath}}
-      # - ops instance list -t {{.cloud}} -c {{.configpath}}
   firewall-allow-http:
     desc: allow http port access
     cmds:

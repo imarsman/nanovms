@@ -17,7 +17,10 @@ vars:
   imagename: nanovms-test-image
   cloud: gcp
   localport: 8000
-  cloudport: 8000
+  cloudport: 80
+  # instanceid: 
+  #   sh: ops instance list -t gcp -c /Users/ian/git/nanovms/build/config/config.json | grep nanovms
+    #  | tail -1 | cut -d ' ' -f2
 
 # If running with pre-set environment variables do not run the dotenv
 dotenv: ['./build/config/env/.ENV']
@@ -26,11 +29,20 @@ tasks:
   build:
     desc: build native and linux apps for running in novavms
     dir: ./app
+    # vars:
+    #   instanceid: 
+    #     sh: $(echo "ops instance list -t {{.cloud}} -c {{.configpath}}")
     cmds:
+      # - gcloud filestore instances list --project=nanovms-321303
+      # - echo "instanceid {{.instanceid}}"
+      # Use of embed to flag context - used for port use
       - echo "cloud" > .context
-      - GOOS=linux go build -o {{.basepath}}/build/{{.applinux}} main.go
+      - GOOS=linux go build .
+      - mv app {{.basepath}}/build/{{.applinux}}
+      # Use of embed to flag context - used for port use
       - echo "local" > .context
-      - go build -o {{.basepath}}/build/{{.nativeapp}} main.go
+      - go build .
+      - mv app {{.basepath}}/build/{{.nativeapp}}
   run-locally:
     desc: run locally using ops
     dir: ./build

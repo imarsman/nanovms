@@ -1,12 +1,12 @@
 package main
 
 import (
-	// embed
 	"embed"
 	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"sort"
 	"strconv"
@@ -15,16 +15,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//go:embed static/*
+var static embed.FS
+
 //go:embed transactions.json
 var transactionJSON string
 
 //go:embed .context
 var context string
-
-//go:embed static/** static/css/**
-var static embed.FS
-
-// var router *mux.Router
 
 const (
 	jsonContentType     = "application/json; charset=utf-8"
@@ -151,6 +149,26 @@ func GetTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(json))
 }
 
+// func getFileSystem(useOS bool) http.FileSystem {
+// 	var fsys fs.FS
+// 	if useOS {
+// 		fmt.Println("using live mode")
+// 		fsys = os.DirFS("static")
+// 	} else {
+// 		fmt.Println("using embed mode")
+// 		var (
+// 			//go:embed static
+// 			files embed.FS
+// 			err   error
+// 		)
+// 		fsys, err = fs.Sub(files, "static")
+// 		if err != nil {
+// 			fmt.Println("error", err)
+// 		}
+// 	}
+// 	return http.FS(fsys)
+// }
+
 // Main method for app. A simple router and a simple handler.
 func main() {
 	infiniteWait := make(chan string)
@@ -163,19 +181,31 @@ func main() {
 	// Sample JSON returning function
 	router.HandleFunc("/transactions", GetTransactionsHandler).Methods(http.MethodGet).Name("Sample transactions")
 
-	staticDir := "/"
+	// We need to convert the embed FS to an io.FS in order to work with it
+	fsys := fs.FS(static)
+	contentStatic, _ := fs.Sub(fsys, "static")
 
 	// Handle static content
-	router.PathPrefix(staticDir).Handler(http.StripPrefix(staticDir, http.FileServer(http.Dir("./static")))).Name("Documentation")
+	// Note that we use http.FS to access our io.FS instead of trying to treat
+	// it like a local directory. If you run the build in place it will work but
+	// if you move the binary the files will not be available as http.Dir looks
+	// for a locally available fileystem, not an embed one.
 
+	// Normally with a system filesystem we'd use
+	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
+	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.FS(contentStatic)))).Name("Documentation")
+
+	// For now just use an unprivileged port. Running locally as non-root would
+	// fail but running in the cloud should be fine, but that would take more
+	// effort than is currently warrrented. May revisit.
 	if cloud {
 		go func() {
-			fmt.Println("Serving transactions on port", "80")
-			http.ListenAndServe(":80", router)
+			fmt.Println("Running in cloud mode. Serving transactions on port", "8000", "cloud", cloud)
+			http.ListenAndServe(":8000", router)
 		}()
 	} else {
 		go func() {
-			fmt.Println("Serving transactions on port", "8000")
+			fmt.Println("Running locally. Serving transactions on port", "8000", "cloud", cloud)
 			http.ListenAndServe(":8000", router)
 		}()
 	}

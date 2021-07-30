@@ -22,7 +22,7 @@ func newRootServer() *mux.Router {
 // newTransactionsRequestServer a simple server to handle the /transactions endpoint
 func newTransactionsRequestServer() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/transactions", GetTransactionsHandler).Methods("GET")
+	r.HandleFunc("/transactions/", GetTransactionsHandler).Methods("GET")
 
 	return r
 }
@@ -59,7 +59,7 @@ func TestCallHandlers(t *testing.T) {
 	is := is.New(t)
 
 	t.Log("Calling GetTransactions at /transactions")
-	err := callServer(t, newTransactionsRequestServer(), http.MethodGet, "/transactions", http.StatusOK)
+	err := callServer(t, newTransactionsRequestServer(), http.MethodGet, "/transactions/", http.StatusOK)
 	is.NoErr(err)
 
 	t.Log("Calling static docs at /")

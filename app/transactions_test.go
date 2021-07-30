@@ -3,8 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/fs"
 	"testing"
 
 	"github.com/matryer/is"
@@ -75,19 +74,34 @@ func TestObscurePAN(t *testing.T) {
 func TestEmbeddedFS(t *testing.T) {
 	is := is.New(t)
 
-	for _, name := range []string{"static"} {
-		t.Logf("Filesystem \"%s\"", name)
-		err := filepath.Walk(name,
-			func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if info.IsDir() == false {
-					fmt.Println(path, info.Size(), "bytes")
-				}
-				return nil
-			})
+	fsys := fs.FS(static)
+	contentStatic, _ := fs.Sub(fsys, "static")
 
-		is.NoErr(err)
-	}
+	fs.WalkDir(contentStatic, ".",
+		func(path string, d fs.DirEntry, err error) error {
+			is.NoErr(err)
+			if err != nil {
+				return err
+			}
+			if d.IsDir() == false {
+				fmt.Println(path, d.Name())
+			}
+			return nil
+		})
+
+	// for _, name := range []string{"static"} {
+	// 	t.Logf("Filesystem \"%s\"", name)
+	// 	err := filepath.Walk(name,
+	// 		func(path string, info os.FileInfo, err error) error {
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			if info.IsDir() == false {
+	// 				fmt.Println(path, info.Size(), "bytes")
+	// 			}
+	// 			return nil
+	// 		})
+
+	// 	is.NoErr(err)
+	// }
 }

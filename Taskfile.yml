@@ -54,6 +54,7 @@ tasks:
       # Note: requires GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_CLOUD_PROJECT, and
       # GOOGLE_CLOUD_ZONE environment variables
       - ops image delete {{.imagename}}.img
+      - ops image delete {{.imagename}}
   create-instance:
     desc: create an instance in cloud
     cmds:

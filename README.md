@@ -1,5 +1,9 @@
 # nanovms
-Test of nanovms with Golang
+Test of nanovms with Golang. The goal of this project is to understand how to
+use ops and the gcloud CLI to build images, get them to the cloud, build
+instances, and successfully run them with proper port settings. Once this works
+it should be possible to create a cluster using an image and set the cluster to
+scale up and down with load.
 
 This code is based on some that I wrote for an evaluation and for a personal project.
 
@@ -12,13 +16,19 @@ a managed instance cluster.
 
 See https://nanovms.com
 
-## Sample run
+## What works
 
-```
-ops run -p 8000 ./nanoapplinux
- 100% |████████████████████████████████████████|  [0s:0s]
- 100% |████████████████████████████████████████|  [0s:0s]
-booting /Users/ian/.ops/images/nanoapplinux.img ...
-en1: assigned 10.0.2.15
-Serving transactions on port 8000en1: assigned FE80::D809:D5FF:FE5A:637B
-```
+- building native and linux
+- creating image the first time
+  - image on GCP not deleted properly first so that does not get updated
+- creating instance from image
+- accessing unikernal instance via http://theip/transactions
+
+## What does not work
+
+- proper shutdown of existing instance and/or deletion
+- deletion of GCP image prior to creation of a new one
+- Having a new instance have opened ports without manual intervention
+
+Once the proper steps are handled in the proper order it should work to automate
+building, image creation, instance creation, etc.

@@ -53,6 +53,7 @@ tasks:
       - ops image list
       # - ops image list -t {{.cloud}} -c {{.configpath}}
   create-image:
+    # This fails to delete the source image
     desc: create image locally
     dir: ./build
     cmds:
@@ -66,6 +67,7 @@ tasks:
       - ops image delete {{.imagename}}.img
       - ops image delete {{.imagename}}
   create-instance:
+    # Does not check to see if the cloud image is there and will fail if not
     # There are problems here with Google complaining of a pre-existing image
     desc: create an instance in cloud
     cmds:
@@ -90,3 +92,15 @@ tasks:
     cmds:
       - task: create-instance
       - curl http://127.0.0.1:{{.localport}}/transactions
+
+  # Things to do
+  # - Delete instance
+  # - Delete GCP image
+  #   - https://cloud.google.com/sdk/gcloud/reference/compute/images/delete
+  # - Use image to make template
+  #   - https://cloud.google.com/compute/docs/instance-templates/create-instance-templates
+  # - Use template to make managed instance group (MIG)
+  #   - https://cloud.google.com/compute/docs/instance-groups/creating-groups-of-managed-instances
+  # - Modify MIG
+  #   - https://cloud.google.com/compute/docs/instance-groups/updating-migs
+  # - Learn how to replace template used by MIG

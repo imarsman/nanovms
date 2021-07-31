@@ -71,6 +71,8 @@ func init() {
 	}
 }
 
+// curl "https://api.twitter.com/2/tweets/search/recent?query=text=#kittens&max_results=10" -H "Authorization: Bearer "
+
 // GetBySearch get tweets by search term
 func GetBySearch() error {
 

@@ -74,24 +74,26 @@ func init() {
 // curl "https://api.twitter.com/2/tweets/search/recent?query=text=#kittens&max_results=10" -H "Authorization: Bearer "
 
 // GetBySearch get tweets by search term
-func GetBySearch() error {
+func GetBySearch() ([]byte, error) {
 
 	opts := twitter.TweetRecentSearchOpts{
-		Expansions:  []twitter.Expansion{twitter.Expansion(twitter.TweetFieldText)},
-		TweetFields: []twitter.TweetField{twitter.TweetFieldID},
-		MaxResults:  5,
+		// Expansions:  []twitter.Expansion{twitter.Expansion(twitter.TweetFieldText)},
+		// TweetFields: []twitter.TweetField{twitter.TweetFieldID},
+		TweetFields: []twitter.TweetField{twitter.TweetFieldCreatedAt, twitter.TweetFieldLanguage},
+		MaxResults:  10,
 	}
 
-	tweetDictionary, err := client.TweetRecentSearch(context.Background(), "#kitten or #kittens", opts)
+	recentSearchResponse, err := client.TweetRecentSearch(context.Background(), "#kitten", opts)
 	if err != nil {
-		return fmt.Errorf("tweet lookup error: %v", err)
+		// fmt.Println(tweetDictionary.Raw)
+		return nil, fmt.Errorf("tweet lookup error: %v", err)
 	}
 
-	enc, err := json.MarshalIndent(tweetDictionary, "", "    ")
+	enc, err := json.MarshalIndent(recentSearchResponse, "", "    ")
 	if err != nil {
 		log.Panic(err)
 	}
 	fmt.Println(string(enc))
 
-	return nil
+	return enc, nil
 }

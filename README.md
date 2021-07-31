@@ -16,7 +16,7 @@ a managed instance cluster.
 
 See https://nanovms.com
 
-You can see things as they stand [here](http://35.211.99.88:8000). This may
+You can see things as they stand [here](http://35.211.243.30:8000). This may
 intermittently be unavailable if I am doing work on the code and redeploying.
 
 ## What works

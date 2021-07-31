@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"text/template"
 	"time"
@@ -21,7 +20,6 @@ var t *template.Template
 var routeMatch *regexp.Regexp
 var count uint64
 var startTime *time.Time
-var mu sync.Mutex
 
 const (
 	jsonContentType     = "application/json; charset=utf-8"
@@ -203,7 +201,6 @@ func sortDescendingPostTimestamp(transactions *TransactionList) *TransactionList
 // toJSON get JSON for Transactions struct
 func toJSON(transactions TransactionList) (string, error) {
 
-	// t := obscurePan(transactions)
 	// Indent for clarity here but would consider not for machine->machine communication
 	bytes, err := json.MarshalIndent(&transactions, "", "  ")
 	if err != nil {

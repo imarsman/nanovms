@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+/*
+	A simple stack using a Go container/list, which is an ordered list of
+	interface values. This stack implementation assumes strings are stored.
+*/
+
+// From https://golangbyexample.com/stack-in-golang/
+
 // NewStack get a new instance of a Stack struct
 func NewStack() *Stack {
 	stack := &Stack{

@@ -36,7 +36,6 @@ func main() {
 
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(static)
-	contentCSS, _ := fs.Sub(fsys, "static/css")
 
 	// Handle static content
 	// Note that we use http.FS to access our io.FS instead of trying to treat
@@ -46,7 +45,14 @@ func main() {
 
 	// Normally with a system filesystem we'd use
 	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
+
+	// Set file serving for css files
+	contentCSS, _ := fs.Sub(fsys, "static/css")
 	router.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentCSS)))).Name("CSS Files")
+
+	// Set file serving for JS files
+	contentJS, _ := fs.Sub(fsys, "static/js")
+	router.PathPrefix("/js").Handler(http.StripPrefix("/js", http.FileServer(http.FS(contentJS)))).Name("JS Files")
 
 	// Default
 	router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")

@@ -1,0 +1,25 @@
+concurrency: 2
+
+# number of script repetitions, optional parameter, default 1
+loopcount: 100
+
+# time to wait for a response from the server, optional parameter, by default 2 seconds
+timeout: 5
+
+# network protocol http or https, optional parameter, default http
+scheme: http
+
+# domain hostname or IP address, required parameter
+#host: 127.0.0.1
+host: 35.227.28.72
+
+# host port for connection, optional parameter, default 80
+port: 8000
+
+randomdelayms: 200
+
+requests:
+
+  # RANDOM - in this group, requests will be executed in an arbitrary order an arbitrary number of times (some request may be executed several times, and some will not be executed at all)
+  - RANDOM:
+    - GET: /

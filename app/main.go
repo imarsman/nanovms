@@ -49,9 +49,8 @@ func main() {
 	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
 	router.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentCSS)))).Name("CSS Files")
 
-	router.HandleFunc("/", parsePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
-	// Find way to allow all
-	router.HandleFunc("/benchmark", parsePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+	// Default
+	router.PathPrefix("/").HandlerFunc(parsePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more

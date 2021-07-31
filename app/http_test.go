@@ -15,11 +15,7 @@ import (
 // newRootServer a simple server for documents at /
 func newTemplateServer() *mux.Router {
 	r := mux.NewRouter()
-
-	// fsys := fs.FS(static)
-	// contentStatic, _ := fs.Sub(fsys, "static")
-	// r.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentStatic)))).Name("Documentation")
-	r.HandleFunc("/", parsePageHandler).Methods("GET")
+	r.HandleFunc("/", templatePageHandler).Methods("GET")
 
 	return r
 }
@@ -28,10 +24,10 @@ func newTemplateServer() *mux.Router {
 func newCSSServer() *mux.Router {
 	r := mux.NewRouter()
 
+	// Handle static content
 	fsys := fs.FS(static)
 	contentCSS, _ := fs.Sub(fsys, "static/css")
 
-	// Handle static content
 	// Note that we use http.FS to access our io.FS instead of trying to treat
 	// it like a local directory. If you run the build in place it will work but
 	// if you move the binary the files will not be available as http.Dir looks
@@ -83,15 +79,15 @@ func callServer(t *testing.T, router *mux.Router, method, path string, expected 
 func TestCallHandlers(t *testing.T) {
 	is := is.New(t)
 
-	t.Log("Calling GetTransactions at /transactions")
+	t.Log("Calling getTransactionsHandler at /transactions")
 	err := callServer(t, newTransactionsRequestServer(), http.MethodGet, "/transactions/", http.StatusOK)
 	is.NoErr(err)
 
-	t.Log("Calling css docs at /css")
+	t.Log("Calling css doc at /css")
 	err = callServer(t, newCSSServer(), http.MethodGet, "/css/simple.min.css", http.StatusOK)
 	is.NoErr(err)
 
-	t.Log("Calling template docs at /")
+	t.Log("Calling templatePageHandler docs at /")
 	err = callServer(t, newTemplateServer(), http.MethodGet, "/", http.StatusOK)
 	is.NoErr(err)
 }

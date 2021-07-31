@@ -24,6 +24,7 @@ const (
 	jsonContentType     = "application/json; charset=utf-8"
 	markdownContentType = "text/markdown; charset=utf-8"
 	textContentType     = "text/plain; charset=utf-8"
+	htmlContentType     = "text/html; charset=utf-8"
 )
 
 // TransactionList a list of transactions. Allows for JSON list to be read
@@ -70,8 +71,8 @@ func counterIncrement() uint64 {
 	return atomic.AddUint64(&count, 1)
 }
 
+// init initialize counter and parse templates.
 func init() {
-
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(dynamic)
 	contentDynamic, _ := fs.Sub(fsys, "dynamic")
@@ -89,26 +90,59 @@ func init() {
 	}
 }
 
-func parsePageHandler(w http.ResponseWriter, r *http.Request) {
+// templatePageHandler use template collection to produce output
+func templatePageHandler(w http.ResponseWriter, r *http.Request) {
 	pd := newPageData()
 
 	matches := routeMatch.FindStringSubmatch(r.URL.Path)
 	if len(matches) >= 1 {
 		page := matches[1] + ".html"
 		if t.Lookup(page) != nil {
-			w.WriteHeader(200)
+			w.Header().Add("Content-Type", htmlContentType)
+			w.WriteHeader(http.StatusOK)
 			pd.finalize()
 			t.ExecuteTemplate(w, page, pd)
 			return
 		}
 	} else if r.URL.Path == "/" {
-		w.WriteHeader(200)
+		w.Header().Add("Content-Type", htmlContentType)
+		w.WriteHeader(http.StatusOK)
 		pd.finalize()
 		t.ExecuteTemplate(w, "index.html", pd)
 		return
 	}
-	w.WriteHeader(404)
+	w.WriteHeader(http.StatusNotFound)
+	w.Header().Add("Content-Type", textContentType)
 	w.Write([]byte("NOT FOUND"))
+}
+
+// getTransactionsHandler get list of transactions
+func getTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", jsonContentType)
+	transactionList, err := readTransactions()
+	if err != nil { // simulate error getting data
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	sortDescendingPostTimestamp(&transactionList)
+
+	// obscured, err := obscured(transactions)
+	transactionList, err = obscureTransactionID(transactionList) // allow for error
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json, err := toJSON(transactionList)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(json))
 }
 
 // obscureTransactionID obsure PAN attribute
@@ -170,33 +204,4 @@ func toJSON(transactions TransactionList) (string, error) {
 	}
 
 	return string(bytes), nil
-}
-
-// getTransactionsHandler get list of transactions
-func getTransactionsHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", jsonContentType)
-	transactionList, err := readTransactions()
-	if err != nil { // simulate error getting data
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	sortDescendingPostTimestamp(&transactionList)
-
-	// obscured, err := obscured(transactions)
-	transactionList, err = obscureTransactionID(transactionList) // allow for error
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	json, err := toJSON(transactionList)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(json))
 }

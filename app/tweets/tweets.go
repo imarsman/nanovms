@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -19,8 +20,8 @@ var token string
 
 // TweetData summary tweet data for client
 type TweetData struct {
-	ID       string
-	NextLoad time.Time
+	ID         string `json:"id"`         // tweet id for client lookup
+	NextLoadMS int    `json:"nextloadms"` // random next load time
 }
 
 type authorize struct {
@@ -30,7 +31,29 @@ type authorize struct {
 // See https://github.com/g8rswimmer/go-twitter/tree/master/v2
 
 // Sample:
-// curl https://api.twitter.com/2/tweets/search/recent?query=from%3Atwitterdev%20new%20-is%3Aretweet&max_results=10 -H "Authorization: Bearer AAAAAAAAAAAAAAAAAAAAAF7xSAEAAAAAVQigSbjlsluePHIMttuwgzQiqWs%3D2ZrUT9ew0mE4tHzHR11muoo98A3GEIBaYiWHgBiARfL30SZKgT"
+// curl
+// https://api.twitter.com/2/tweets/search/recent?query=from%3Atwitterdev%20new%20-is%3Aretweet&max_results=10
+// -H
+
+// NewTweetData get a prepared new tweet data
+func NewTweetData(id string) *TweetData {
+	td := TweetData{}
+
+	n := rand.Intn(121)
+	if n < 30 {
+		n += 30
+	}
+
+	td.ID = id
+	// next load in random number of milliseconds from 30 up to 120
+	td.NextLoadMS = int(time.Duration(n) / time.Millisecond)
+
+	return &td
+}
+
+func jsTimeSting(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05.000000000 -0700 MST")
+}
 
 func (a authorize) Add(req *http.Request) {
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", a.Token))

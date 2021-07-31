@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"text/template"
 	"time"
@@ -19,6 +20,8 @@ import (
 var t *template.Template
 var routeMatch *regexp.Regexp
 var count uint64
+var startTime *time.Time
+var mu sync.Mutex
 
 const (
 	jsonContentType     = "application/json; charset=utf-8"
@@ -53,6 +56,7 @@ type PageData struct {
 	LoadStart time.Time
 	LoadTime  time.Duration
 	PageLoads uint64
+	Uptime    time.Duration
 }
 
 func newPageData() *PageData {
@@ -65,6 +69,7 @@ func newPageData() *PageData {
 func (pd *PageData) finalize() {
 	pd.LoadTime = time.Since(pd.LoadStart)
 	pd.PageLoads = counterIncrement()
+	pd.Uptime = time.Since(*startTime)
 }
 
 func counterIncrement() uint64 {
@@ -73,6 +78,9 @@ func counterIncrement() uint64 {
 
 // init initialize counter and parse templates.
 func init() {
+	tm := time.Now()
+	startTime = &tm
+
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(dynamic)
 	contentDynamic, _ := fs.Sub(fsys, "dynamic")

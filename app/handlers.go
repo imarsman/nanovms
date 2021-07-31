@@ -1,31 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
-	"strconv"
 	"sync/atomic"
 	"text/template"
 	"time"
 )
 
-var t *template.Template
-var routeMatch *regexp.Regexp
-var count uint64
-var startTime *time.Time
+var templates *template.Template // templates for dynamic pages
+var routeMatch *regexp.Regexp    // template route regex
+var count uint64                 // page hit counter
+var startTime *time.Time         // start time of server running
 
-const (
-	jsonContentType     = "application/json; charset=utf-8"
-	markdownContentType = "text/markdown; charset=utf-8"
-	textContentType     = "text/plain; charset=utf-8"
-	htmlContentType     = "text/html; charset=utf-8"
+const ( // various content types
+	jsonContentType = "application/json; charset=utf-8"
+	textContentType = "text/plain; charset=utf-8"
+	htmlContentType = "text/html; charset=utf-8"
 )
 
 // PageData data for a page's templates
+// Capitalized because it is used in templates and needs to be public
 type PageData struct {
 	Timestamp time.Time
 	LoadStart time.Time
@@ -34,6 +32,7 @@ type PageData struct {
 	Uptime    time.Duration
 }
 
+// newPageData create a pointer to a new PageData struct instance
 func newPageData() *PageData {
 	pd := PageData{}
 	pd.LoadStart = time.Now()
@@ -41,31 +40,35 @@ func newPageData() *PageData {
 	return &pd
 }
 
+// finalize finish off page info that is time specific
 func (pd *PageData) finalize() {
 	pd.LoadTime = time.Since(pd.LoadStart)
 	pd.PageLoads = counterIncrement()
 	pd.Uptime = time.Since(*startTime).Round(time.Second)
 }
 
+// counterIncrement a simple increment of page hit count
 func counterIncrement() uint64 {
 	return atomic.AddUint64(&count, 1)
 }
 
 // init initialize counter and parse templates.
 func init() {
-	tm := time.Now()
-	startTime = &tm
+	t := time.Now()
+	startTime = &t
 
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(dynamic)
 	contentDynamic, _ := fs.Sub(fsys, "dynamic")
 
+	// Load templates by pattern into a structure for later use
 	var err error
-	t, err = template.ParseFS(contentDynamic, "templates/*.html")
+	templates, err = template.ParseFS(contentDynamic, "templates/*.html")
 	if err != nil {
 		log.Println("Cannot parse templates:", err)
 		os.Exit(-1)
 	}
+	// Set up our route matching pattern
 	routeMatch, err = regexp.Compile(`^\/(\w+)`)
 	if err != nil {
 		log.Println("Problems with regular expression:", err)
@@ -80,18 +83,18 @@ func templatePageHandler(w http.ResponseWriter, r *http.Request) {
 	matches := routeMatch.FindStringSubmatch(r.URL.Path)
 	if len(matches) >= 1 {
 		page := matches[1] + ".html"
-		if t.Lookup(page) != nil {
+		if templates.Lookup(page) != nil {
 			w.Header().Add("Content-Type", htmlContentType)
 			w.WriteHeader(http.StatusOK)
 			pd.finalize()
-			t.ExecuteTemplate(w, page, pd)
+			templates.ExecuteTemplate(w, page, pd)
 			return
 		}
 	} else if r.URL.Path == "/" {
 		w.Header().Add("Content-Type", htmlContentType)
 		w.WriteHeader(http.StatusOK)
 		pd.finalize()
-		t.ExecuteTemplate(w, "index.html", pd)
+		templates.ExecuteTemplate(w, "index.html", pd)
 		return
 	}
 	w.WriteHeader(http.StatusNotFound)
@@ -126,27 +129,4 @@ func getTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(json))
-}
-
-// obscureTransactionID obsure PAN attribute
-func obscureTransactionID(transactionlist TransactionList) (TransactionList, error) {
-	newTrans := TransactionList{}
-	for i := 0; i < len(transactionlist.Transactions); i++ {
-		transaction := transactionlist.Transactions[i]
-		s := fmt.Sprint(transaction.TransactionID)
-		var lastDigits int = 0
-		if len(s) > 0 {
-			if len(s) >= 4 {
-				s = s[len(s)-4:]
-			}
-		}
-		lastDigits, err := strconv.Atoi(s)
-		if err != nil {
-			return TransactionList{}, err
-		}
-		transaction.TransactionID = lastDigits
-		newTrans.Transactions = append(newTrans.Transactions, transaction)
-	}
-
-	return newTrans, nil
 }

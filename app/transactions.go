@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // TransactionList a list of transactions. Allows for JSON list to be read
@@ -62,4 +63,27 @@ func toJSON(transactions TransactionList) (string, error) {
 	}
 
 	return string(bytes), nil
+}
+
+// obscureTransactionID obsure PAN attribute
+func obscureTransactionID(transactionlist TransactionList) (TransactionList, error) {
+	newTrans := TransactionList{}
+	for i := 0; i < len(transactionlist.Transactions); i++ {
+		transaction := transactionlist.Transactions[i]
+		s := fmt.Sprint(transaction.TransactionID)
+		var lastDigits int = 0
+		if len(s) > 0 {
+			if len(s) >= 4 {
+				s = s[len(s)-4:]
+			}
+		}
+		lastDigits, err := strconv.Atoi(s)
+		if err != nil {
+			return TransactionList{}, err
+		}
+		transaction.TransactionID = lastDigits
+		newTrans.Transactions = append(newTrans.Transactions, transaction)
+	}
+
+	return newTrans, nil
 }

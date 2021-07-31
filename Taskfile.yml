@@ -41,12 +41,18 @@ tasks:
       - echo "local" > .context
       - go build .
       - mv app {{.basepath}}/build/{{.nativeapp}}
+  run-native:
+    desc: run locally using native biuld
+    dir: ./build
+    cmds:
+      - task: build
+      - ./{{.nativeapp}}
   run-locally:
     desc: run locally using ops
     dir: ./build
     cmds:
       - task: build
-      - ops run -p {{.localport}} ./nanoapplinux
+      - ops run -p {{.localport}} ./{{.applinux}}
   list-images:
     desc: list images
     cmds:

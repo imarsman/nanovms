@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,9 +13,33 @@ import (
 )
 
 // newRootServer a simple server for documents at /
-func newRootServer() *mux.Router {
+func newTemplateServer() *mux.Router {
 	r := mux.NewRouter()
-	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static")))).Name("Documentation")
+
+	// fsys := fs.FS(static)
+	// contentStatic, _ := fs.Sub(fsys, "static")
+	// r.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentStatic)))).Name("Documentation")
+	r.HandleFunc("/", parsePageHandler).Methods("GET")
+
+	return r
+}
+
+// newCSSServer a simple server for documents at /
+func newCSSServer() *mux.Router {
+	r := mux.NewRouter()
+
+	fsys := fs.FS(static)
+	contentCSS, _ := fs.Sub(fsys, "static/css")
+
+	// Handle static content
+	// Note that we use http.FS to access our io.FS instead of trying to treat
+	// it like a local directory. If you run the build in place it will work but
+	// if you move the binary the files will not be available as http.Dir looks
+	// for a locally available fileystem, not an embed one.
+
+	// Normally with a system filesystem we'd use
+	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
+	r.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentCSS)))).Name("CSS Files")
 
 	return r
 }
@@ -22,7 +47,7 @@ func newRootServer() *mux.Router {
 // newTransactionsRequestServer a simple server to handle the /transactions endpoint
 func newTransactionsRequestServer() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/transactions/", GetTransactionsHandler).Methods("GET")
+	r.HandleFunc("/transactions/", getTransactionsHandler).Methods("GET")
 
 	return r
 }
@@ -62,7 +87,11 @@ func TestCallHandlers(t *testing.T) {
 	err := callServer(t, newTransactionsRequestServer(), http.MethodGet, "/transactions/", http.StatusOK)
 	is.NoErr(err)
 
-	t.Log("Calling static docs at /")
-	err = callServer(t, newRootServer(), http.MethodGet, "/", http.StatusOK)
+	t.Log("Calling css docs at /css")
+	err = callServer(t, newCSSServer(), http.MethodGet, "/css/simple.min.css", http.StatusOK)
+	is.NoErr(err)
+
+	t.Log("Calling template docs at /")
+	err = callServer(t, newTemplateServer(), http.MethodGet, "/", http.StatusOK)
 	is.NoErr(err)
 }

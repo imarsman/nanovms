@@ -28,7 +28,6 @@ func main() {
 	infiniteWait := make(chan string)
 
 	cloud := strings.TrimSpace(context) == "cloud"
-	fmt.Println("context", context, "cloud", cloud)
 
 	router := mux.NewRouter().StrictSlash(true)
 

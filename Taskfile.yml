@@ -17,7 +17,7 @@ vars:
   imagename: nanovms-test-image
   cloud: gcp
   localport: 8000
-  cloudport: 80
+  cloudport: 8000
   # instanceid: 
   #   sh: ops instance list -t gcp -c /Users/ian/git/nanovms/build/config/config.json | grep nanovms
     #  | tail -1 | cut -d ' ' -f2

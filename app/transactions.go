@@ -72,10 +72,10 @@ func obscureTransactionID(transactionlist TransactionList) (TransactionList, err
 		transaction := transactionlist.Transactions[i]
 		s := fmt.Sprint(transaction.TransactionID)
 		var lastDigits int = 0
-		if len(s) > 0 {
-			if len(s) >= 4 {
-				s = s[len(s)-4:]
-			}
+		// If length is >= 4 use last found digits, otherwise stick with what we
+		// have
+		if len(s) >= 4 {
+			s = s[len(s)-4:]
 		}
 		lastDigits, err := strconv.Atoi(s)
 		if err != nil {

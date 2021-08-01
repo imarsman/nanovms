@@ -5,8 +5,9 @@ package grpcpass;
 option go_package = "..;grpcpass";
 
 message Message {
-  string url = 1;
+  string img = 1;
   string desc = 2;
+  string alt = 3;
 }
 
 service XKCDService {

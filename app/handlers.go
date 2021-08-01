@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
@@ -32,12 +33,14 @@ const ( // various content types
 // PageData data for a page's templates
 // Capitalized because it is used in templates and needs to be public
 type PageData struct {
-	Timestamp time.Time
-	LoadStart time.Time
-	LoadTime  time.Duration
-	PageLoads uint64
-	Uptime    time.Duration
-	CsrfToken string
+	Timestamp     time.Time
+	LoadStart     time.Time
+	LoadTime      time.Duration
+	PageLoads     uint64
+	Uptime        time.Duration
+	CsrfToken     string
+	IPAddress     string
+	ServerAddress string
 }
 
 // uniqueToken get a random string that can be used as a CSRF header and later to
@@ -47,7 +50,6 @@ func uniqueToken() (token string, err error) {
 	if err != nil {
 		return "", err
 	}
-
 	token = id.String()
 
 	return token, nil
@@ -57,28 +59,64 @@ func uniqueToken() (token string, err error) {
 func newPageData() *PageData {
 	pd := PageData{}
 	pd.LoadStart = time.Now()
-	token, err := uniqueToken()
-	if err != nil {
-		token = ""
-	} else {
-		err := csrfCache.Add(token, "", cache.DefaultExpiration)
-		if err != nil {
-			token = ""
-		}
-		if csrfCache.ItemCount() > 100 {
-			csrfCache.Flush()
-		}
-	}
-	pd.CsrfToken = token
 
 	return &pd
 }
 
+func getServerAddress(r *http.Request) string {
+	ctx := r.Context()
+
+	srvAddr := ctx.Value(http.LocalAddrContextKey).(net.Addr)
+
+	return srvAddr.String()
+}
+
+func (pd *PageData) setServerAddress(address string) {
+	pd.ServerAddress = address
+}
+
+func (pd *PageData) setToken(token string) {
+	if token != "" {
+		pd.CsrfToken = token
+	}
+}
+
 // finalize finish off page info that is time specific
 func (pd *PageData) finalize() {
+	if pd.CsrfToken == "" {
+		token, err := uniqueToken()
+		if err != nil {
+			token = ""
+		} else {
+			pd.setToken(token)
+			err := csrfCache.Add(token, "", cache.DefaultExpiration)
+			if err != nil {
+				token = ""
+			}
+		}
+		pd.CsrfToken = token
+	}
+
 	pd.LoadTime = time.Since(pd.LoadStart)
 	pd.PageLoads = counterIncrement()
 	pd.Uptime = time.Since(*startTime).Round(time.Second)
+}
+
+func findTokenFromRequest(r *http.Request) string {
+	// This is not meant to be definitive but rather to avoid doing work for
+	// free. The csrf token will be renewed frequently and will expire quickly.
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		return ""
+	}
+	_, ok := csrfCache.Get(token)
+	if ok == false {
+		return ""
+	}
+	// Renew cache
+	csrfCache.Set(token, "", cache.DefaultExpiration)
+
+	return token
 }
 
 // counterIncrement a simple increment of page hit count
@@ -114,20 +152,7 @@ func init() {
 
 // twitterHandler get an id for a tweet
 func twitterHandler(w http.ResponseWriter, r *http.Request) {
-	// This is not meant to be definitive but rather to avoid doing work for
-	// free. The csrf token will be renewed frequently and will expire quickly.
-	token := r.Header.Get("csrf-token")
-	if token == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	_, ok := csrfCache.Get(token)
-	if ok == false {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	// Renew cache
-	csrfCache.Set(token, "", cache.DefaultExpiration)
+	findTokenFromRequest(r)
 
 	td, err := tweets.GetTweetData()
 	if err != nil { // simulate error getting data
@@ -135,6 +160,7 @@ func twitterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// fmt.Println("tweet data", td)
 	payload, err := json.MarshalIndent(td, "", "  ")
 	if err != nil { // simulate error getting data
 		w.WriteHeader(http.StatusInternalServerError)
@@ -150,12 +176,17 @@ func twitterHandler(w http.ResponseWriter, r *http.Request) {
 func templatePageHandler(w http.ResponseWriter, r *http.Request) {
 	pd := newPageData()
 
+	token := findTokenFromRequest(r)
+	address := getServerAddress(r)
+	pd.setServerAddress(address)
+
 	matches := routeMatch.FindStringSubmatch(r.URL.Path)
 	if len(matches) >= 1 {
 		page := matches[1] + ".html"
 		if templates.Lookup(page) != nil {
 			w.Header().Add("Content-Type", htmlContentType)
 			w.WriteHeader(http.StatusOK)
+			pd.setToken(token)
 			pd.finalize()
 			templates.ExecuteTemplate(w, page, pd)
 			return
@@ -163,10 +194,12 @@ func templatePageHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/" {
 		w.Header().Add("Content-Type", htmlContentType)
 		w.WriteHeader(http.StatusOK)
+		pd.setToken(token)
 		pd.finalize()
 		templates.ExecuteTemplate(w, "index.html", pd)
 		return
 	}
+
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("Content-Type", textContentType)
 	w.Write([]byte("NOT FOUND"))

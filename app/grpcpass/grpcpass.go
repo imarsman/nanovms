@@ -35,6 +35,7 @@ Notes:
 */
 
 // GetXKCD get an xkcd url and description
+// Presumably this will be used by the GRPC infrastructure
 func (s *Server) GetXKCD(ctx context.Context, in *Message) (*Message, error) {
 	log.Printf("Receive message body from client: %d", in.GetNumber())
 
@@ -88,32 +89,25 @@ func fetchXKCD(num int) ([]byte, error) {
 	return bytes, nil
 }
 
+// parseJSON rather than use a map[string]interface{} use a library that handles
+// JSON Path and type conversion.
 func parseJSON(input []byte) (*XKCD, error) {
-	xkcd := XKCD{}
-	json := string(input)
+	parsed := gjson.Parse(string(input))
 
-	var res gjson.Result
+	xkcd := XKCD{
+		Day:     int(parsed.Get("day").Int()),
+		Month:   int(parsed.Get("day").Int()),
+		Year:    int(parsed.Get("year").Int()),
+		Number:  int(parsed.Get("num").Int()),
+		Title:   parsed.Get("safe_title").String(),
+		AltText: parsed.Get("alt").String(),
+		Img:     parsed.Get("img").String(),
+	}
 
-	res = gjson.Get(json, "day")
-	xkcd.Day = int(res.Int())
-
-	res = gjson.Get(json, "month")
-	xkcd.Month = int(res.Int())
-
-	res = gjson.Get(json, "year")
-	xkcd.Year = int(res.Int())
-
-	res = gjson.Get(json, "num")
-	xkcd.Number = int(res.Int())
-
-	res = gjson.Get(json, "safe_title")
-	xkcd.Title = res.String()
-
-	res = gjson.Get(json, "alt")
-	xkcd.AltText = res.String()
-
-	res = gjson.Get(json, "img")
-	xkcd.Img = res.String()
+	// Maybe the safe_title is not there sometimes
+	if xkcd.Title == "" {
+		xkcd.Title = parsed.Get("title").String()
+	}
 
 	return &xkcd, nil
 }

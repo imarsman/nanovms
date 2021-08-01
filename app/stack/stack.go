@@ -27,36 +27,35 @@ type Stack struct {
 }
 
 // Push to the stack
-func (c *Stack) Push(value string) {
-	c.stack.PushFront(value)
+func (s *Stack) Push(value string) {
+	s.stack.PushFront(value)
 }
 
 // Pop from stack
-func (c *Stack) Pop() error {
-	if c.stack.Len() > 0 {
-		ele := c.stack.Front()
-		c.stack.Remove(ele)
+func (s *Stack) Pop() error {
+	if s.stack.Len() > 0 {
+		ele := s.stack.Front()
+		s.stack.Remove(ele)
 	}
 	return fmt.Errorf("Pop Error: Queue is empty")
 }
 
 // Front get front item in stack if it is a string
-func (c *Stack) Front() (string, error) {
-	if c.stack.Len() > 0 {
-		if val, ok := c.stack.Front().Value.(string); ok {
-			return val, nil
-		}
-		return "", fmt.Errorf("Peep Error: Queue Datatype is incorrect")
+func (s *Stack) Front() (interface{}, error) {
+	if s.stack.Len() > 0 {
+		val := s.stack.Front()
+		return val.Value, nil
 	}
-	return "", fmt.Errorf("Peep Error: Queue is empty")
+	// return "", fmt.Errorf("Peep Error: Queue Datatype is incorrect")
+	return nil, fmt.Errorf("Peep Error: Queue is empty")
 }
 
 // Size get size of stack
-func (c *Stack) Size() int {
-	return c.stack.Len()
+func (s *Stack) Size() int {
+	return s.stack.Len()
 }
 
 // Empty is stack empty
-func (c *Stack) Empty() bool {
-	return c.stack.Len() == 0
+func (s *Stack) Empty() bool {
+	return s.stack.Len() == 0
 }

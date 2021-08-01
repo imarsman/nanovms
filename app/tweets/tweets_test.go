@@ -9,7 +9,9 @@ import (
 func TestSearch(t *testing.T) {
 	is := is.New(t)
 
-	results, err := GetBySearch()
-	is.NoErr(err)
-	t.Log(string(results))
+	for i := 0; i < 20; i++ {
+		results, err := GetTweetData()
+		is.NoErr(err)
+		t.Log(results)
+	}
 }

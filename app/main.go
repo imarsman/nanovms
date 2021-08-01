@@ -23,7 +23,8 @@ var transactionJSON string
 //go:embed .context
 var context string
 
-// Main method for app. A simple router and a simple handler.
+// Main method for app. A simple router and static, struct/json producing
+// template, Golang template pages, and a Twitter API handler.
 func main() {
 	infiniteWait := make(chan string)
 

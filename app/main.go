@@ -78,7 +78,9 @@ func main() {
 		go func() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
-
+		}()
+		go func() {
+			fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
 			if err := grpcServer.Serve(lis); err != nil {
 				log.Fatalf("failed to serve: %s", err)
 			}
@@ -87,7 +89,9 @@ func main() {
 		go func() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
-
+		}()
+		go func() {
+			fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
 			if err := grpcServer.Serve(lis); err != nil {
 				log.Fatalf("failed to serve: %s", err)
 			}

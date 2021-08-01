@@ -5,10 +5,13 @@ import (
 	_ "embed"
 	"fmt"
 	"io/fs"
+	"log"
+	"net"
 	"net/http"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 )
 
 //go:embed dynamic/*
@@ -61,6 +64,13 @@ func main() {
 	// Default
 	router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
+	lis, err := net.Listen("tcp", ":9000")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more
 	// effort than is currently warrrented. May revisit.
@@ -68,11 +78,19 @@ func main() {
 		go func() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
+
+			if err := grpcServer.Serve(lis); err != nil {
+				log.Fatalf("failed to serve: %s", err)
+			}
 		}()
 	} else {
 		go func() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			http.ListenAndServe(":8000", router)
+
+			if err := grpcServer.Serve(lis); err != nil {
+				log.Fatalf("failed to serve: %s", err)
+			}
 		}()
 	}
 

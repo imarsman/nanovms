@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
@@ -9,12 +10,18 @@ import (
 	"sync/atomic"
 	"text/template"
 	"time"
+
+	"github.com/google/uuid"
+	cache "github.com/patrickmn/go-cache"
+
+	"github.com/imarsman/nanovms/app/tweets"
 )
 
 var templates *template.Template // templates for dynamic pages
 var routeMatch *regexp.Regexp    // template route regex
 var count uint64                 // page hit counter
 var startTime *time.Time         // start time of server running
+var csrfCache *cache.Cache
 
 const ( // various content types
 	jsonContentType = "application/json; charset=utf-8"
@@ -30,12 +37,39 @@ type PageData struct {
 	LoadTime  time.Duration
 	PageLoads uint64
 	Uptime    time.Duration
+	CsrfToken string
+}
+
+// uniqueToken get a random string that can be used as a CSRF header and later to
+// fetch the server-stored JSR token string.
+func uniqueToken() (token string, err error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+
+	token = id.String()
+
+	return token, nil
 }
 
 // newPageData create a pointer to a new PageData struct instance
 func newPageData() *PageData {
 	pd := PageData{}
 	pd.LoadStart = time.Now()
+	token, err := uniqueToken()
+	if err != nil {
+		token = ""
+	} else {
+		err := csrfCache.Add(token, "", cache.DefaultExpiration)
+		if err != nil {
+			token = ""
+		}
+		if csrfCache.ItemCount() > 100 {
+			csrfCache.Flush()
+		}
+	}
+	pd.CsrfToken = token
 
 	return &pd
 }
@@ -54,6 +88,8 @@ func counterIncrement() uint64 {
 
 // init initialize counter and parse templates.
 func init() {
+	csrfCache = cache.New(5*time.Minute, 2*time.Minute)
+
 	t := time.Now()
 	startTime = &t
 
@@ -74,6 +110,40 @@ func init() {
 		log.Println("Problems with regular expression:", err)
 		os.Exit(-1)
 	}
+}
+
+// twitterHandler get an id for a tweet
+func twitterHandler(w http.ResponseWriter, r *http.Request) {
+	// This is not meant to be definitive but rather to avoid doing work for
+	// free. The csrf token will be renewed frequently and will expire quickly.
+	token := r.Header.Get("csrf-token")
+	if token == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	_, ok := csrfCache.Get(token)
+	if ok == false {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	// Renew cache
+	csrfCache.Set(token, "", cache.DefaultExpiration)
+
+	td, err := tweets.GetTweetData()
+	if err != nil { // simulate error getting data
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	payload, err := json.MarshalIndent(td, "", "  ")
+	if err != nil { // simulate error getting data
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", jsonContentType)
+	w.Write(payload)
 }
 
 // templatePageHandler use template collection to produce output

@@ -110,8 +110,6 @@ func GetTweetData() (*TweetData, error) {
 	fmt.Println("empty stack, refilling")
 
 	opts := twitter.TweetRecentSearchOpts{
-		// Expansions:  []twitter.Expansion{twitter.Expansion(twitter.TweetFieldText)},
-		// TweetFields: []twitter.TweetField{twitter.TweetFieldID},
 		TweetFields: []twitter.TweetField{twitter.TweetFieldCreatedAt, twitter.TweetFieldLanguage},
 		MaxResults:  10,
 	}
@@ -138,12 +136,6 @@ func GetTweetData() (*TweetData, error) {
 	for _, v := range tdList {
 		fmt.Println(v)
 	}
-
-	// enc, err := json.MarshalIndent(recentSearchResponse, "", "    ")
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
-	// fmt.Println(string(enc))
 
 	v, err := tweetStack.Front()
 	if err != nil {

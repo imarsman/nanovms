@@ -57,6 +57,9 @@ func main() {
 	// Default
 	router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
+	// For page tweets
+	router.PathPrefix("/").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Tweets")
+
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more
 	// effort than is currently warrrented. May revisit.

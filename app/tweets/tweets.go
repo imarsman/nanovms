@@ -114,22 +114,15 @@ func GetTweetData() (*TweetData, error) {
 		return td, nil
 	}
 
-	// fmt.Println("empty stack, refilling")
-
 	opts := twitter.TweetRecentSearchOpts{
 		TweetFields: []twitter.TweetField{twitter.TweetFieldCreatedAt, twitter.TweetFieldLanguage},
 		MaxResults:  50,
 	}
 
-	// Get random offset to obtain a random subset
-
 	recentSearchResponse, err := client.TweetRecentSearch(context.Background(), "\"sea otter\"", opts)
 	if err != nil {
-		// fmt.Println(tweetDictionary.Raw)
 		return TweetDataError(), fmt.Errorf("tweet lookup error: %v", err)
 	}
-
-	// var tdList = make([]TweetData, 0, 10)
 
 	chosen := make(map[int]int)
 	count := 0
@@ -155,10 +148,6 @@ func GetTweetData() (*TweetData, error) {
 			}
 		}
 	}
-
-	// for _, v := range tdList {
-	// 	fmt.Println(v)
-	// }
 
 	v, err := tweetStack.Front()
 	if err != nil {

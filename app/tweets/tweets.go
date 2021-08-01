@@ -124,6 +124,7 @@ func GetTweetData() (*TweetData, error) {
 		return TweetDataError(), fmt.Errorf("tweet lookup error: %v", err)
 	}
 
+	// Avoid going out of bounds
 	max := 50
 	if len(recentSearchResponse.Raw.Tweets) < 50 {
 		max = len(recentSearchResponse.Raw.Tweets)
@@ -134,11 +135,13 @@ func GetTweetData() (*TweetData, error) {
 	// Twitter errors at less than 10 results but we only want 5
 	for {
 		count++
+		// Avoid going out of bounds
 		offset := r.Intn(max)
 		// Try again if we already have included one
 		if _, ok := chosen[offset]; ok {
 			continue
 		} else {
+			// Avoid going out of bounds
 			if count < 20 && count < max {
 				v := recentSearchResponse.Raw.Tweets[offset]
 				count++

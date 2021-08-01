@@ -2,8 +2,7 @@ syntax = "proto3";
 package grpcpass;
 
 // nanovms/app]$: protoc -I. --go_out=./grpcpass/proto grpcpass/proto/grpcpass.proto
-// option go_package = "github.com/imarsman/nanovms/app/grpcpass/gen;../gen";
-option go_package = "../";
+option go_package = "..;grpcpass";
 
 message Message {
   string url = 1;
@@ -11,5 +10,5 @@ message Message {
 }
 
 service XKCDService {
-  rpc SayXKCD(Message) returns (Message) {}
+  rpc GetXKCD(Message) returns (Message) {}
 }

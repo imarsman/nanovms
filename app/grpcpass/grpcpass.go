@@ -10,15 +10,15 @@ type Server struct {
 }
 
 /*
+
 Notes:
 - brew install protobuf
+- https://tutorialedge.net/golang/go-grpc-beginners-tutorial/
+
 */
 
-func GeXKCD() {
-
-}
-
-func (s *Server) SayHello(ctx context.Context, in *Message) (*Message, error) {
-	log.Printf("Receive message body from client: %s", in.Body)
-	return &Message{Body: "Hello From the Server!"}, nil
+// GetXKCD get an xkcd url and description
+func (s *Server) GetXKCD(ctx context.Context, in *Message) (*Message, error) {
+	log.Printf("Receive message body from client: %s", in.Desc)
+	return &Message{Desc: "Hello From the Server!"}, nil
 }

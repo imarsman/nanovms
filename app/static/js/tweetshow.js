@@ -69,7 +69,7 @@ function setTweet(data) {
     twttr.widgets
         .createTweet(data['tweetid'], document.getElementById("#tweet-" + data['id']), {
             conversation: "none", // or all
-            cards: "visible", // or visible
+            cards: "hidden", // or visible
             linkColor: "#cc0000", // default is blue
             theme: "light", // or dark
         }).then(function (el) {

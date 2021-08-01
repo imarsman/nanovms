@@ -105,7 +105,7 @@ func (pd *PageData) finalize() {
 func findTokenFromRequest(r *http.Request) string {
 	// This is not meant to be definitive but rather to avoid doing work for
 	// free. The csrf token will be renewed frequently and will expire quickly.
-	token := r.URL.Query().Get("token")
+	token := r.URL.Query().Get("csrf")
 	if token == "" {
 		return ""
 	}

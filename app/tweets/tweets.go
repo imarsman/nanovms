@@ -119,23 +119,27 @@ func GetTweetData() (*TweetData, error) {
 		MaxResults:  50,
 	}
 
-	recentSearchResponse, err := client.TweetRecentSearch(context.Background(), "\"sea otter\"", opts)
+	recentSearchResponse, err := client.TweetRecentSearch(context.Background(), "linux", opts)
 	if err != nil {
 		return TweetDataError(), fmt.Errorf("tweet lookup error: %v", err)
 	}
 
+	max := 50
+	if len(recentSearchResponse.Raw.Tweets) < 50 {
+		max = len(recentSearchResponse.Raw.Tweets)
+	}
 	chosen := make(map[int]int)
 	count := 0
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// Twitter errors at less than 10 results but we only want 5
 	for {
 		count++
-		offset := r.Intn(50)
+		offset := r.Intn(max)
 		// Try again if we already have included one
 		if _, ok := chosen[offset]; ok {
 			continue
 		} else {
-			if count < 20 {
+			if count < 20 && count < max {
 				v := recentSearchResponse.Raw.Tweets[offset]
 				count++
 				if count < 10 {

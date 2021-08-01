@@ -12,6 +12,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// XKCD a struct to contain the elements of an xkcd image to be used by the app
 type XKCD struct {
 	Day     int    `json:"day"`
 	Month   int    `json:"month"`
@@ -59,6 +60,13 @@ func (s *Server) GetXKCD(ctx context.Context, in *Message) (*Message, error) {
 
 	return msg, nil
 }
+
+/*
+	The xkcd illustrator has kindly made his many years' worth of daily cartoons
+	available using a simple JSON GET endpoint.
+
+	See: https://xkcd.com/json.html
+*/
 
 // fetchXKCD fetch info for a comic for a day from xkcd
 func fetchRandomXKCD() ([]byte, error) {

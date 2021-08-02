@@ -6,7 +6,9 @@
     Note: There may be a networking issue with the GRPC calls. I will work on
     it. Sadly this is likely because GCP handles http2 connections differently.
     I have to find  out if I can bypass this. In the meantime I have skipped the
-    GRPC call and just use an HTTP one.
+    GRPC call and just use an HTTP one. Note that the GRPC server does work
+    locally but not when the firewall in place (in this case GCP) is not letting
+    HTTP2 connections through.
 </p>
 <p>
     This is an overly complicated page in that it uses a GRPC server started by

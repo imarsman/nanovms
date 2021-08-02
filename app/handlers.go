@@ -181,22 +181,15 @@ func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 
 func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	// serverAddr := "localhost:9000"
-	serverAddr := "[::1]:9080"
+	serverAddr := "[::1]:9000"
 
 	var opts []grpc.DialOption
 
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithBlock())
 
-	// opts = append(opts, grpc.wi)
-	// opts = append(opts, grpc.)
-	// opts = append(opts, grpc.UseCompressor)
-
-	// conn, err := grpc.Dial(serverAddr, opts...)
-	// if err != nil {
-	// 	log.Fatalf("fail to dial: %v", err)
-	// }
-	// fmt.Println("credentials", *ClientCredentials())
+	// Connect with credentials
+	// Currently trying only to use TLS to allow GCP to permit the connection
 	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*ClientCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)

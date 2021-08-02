@@ -112,7 +112,6 @@ func FetchXKCD(num int) ([]byte, error) {
 	}
 
 	url := "http://xkcd.com/" + fmt.Sprintf("%v", num) + "/info.0.json"
-	// fmt.Println(url)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -145,8 +144,6 @@ func ParseXKCDJSON(input []byte) (*XKCD, error) {
 		AltText: parsed.Get("alt").String(),
 		Img:     parsed.Get("img").String(),
 	}
-
-	// fmt.Println("title", xkcd.Title)
 
 	// Maybe the safe_title is not there sometimes
 	if xkcd.Title == "" {

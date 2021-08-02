@@ -3,12 +3,14 @@
 <h1>Sample GRPC passthrough showing random xkcd cartoons</h1>
 
 <p>
-    Note: There may be a networking issue with the GRPC calls. I will work on
-    it. Sadly this is likely because GCP handles http2 connections differently.
-    I have to find  out if I can bypass this. In the meantime I have skipped the
-    GRPC call and just use an HTTP one. Note that the GRPC server does work
-    locally but not when the firewall in place (in this case GCP) is not letting
-    HTTP2 connections through.
+    Note: this application is currently available on GCP, which does not allow
+    http2 traffic unless it is used for TCP. If http2 communication is attempted
+    without TLS GCP will downgrade the connection to http 1.1 and GRPC will not
+    work. I am in the process of adding and testing TLS for the test server in
+    the app and for the client connecting. The fallback position is to skip the
+    GRPC call and just call the xkcd endpoint via a function. The GRPC aspect is
+    not useful except as a way to experiment with GRPC and passing through GRPC
+    calls to regular http endpoints.
 </p>
 <p>
     This is an overly complicated page in that it uses a GRPC server started by
@@ -18,19 +20,33 @@
 </p>
 
 <p>
-    Although it is a bit tedious to set up a GRPC server it was not too
-    difficult to figure out. There are many advanced features such as streaming
-    and TLS and authorization that I have not explored.
+    The Javascript for this page calls this server requesting metadata about an
+    xkcd cartoon for a day. A random day is selected for each of the 5 divs in
+    this page. (from among the first 2,000 daily cartoons available from the
+    xkcd API). The server calculates a random delay that is used to reload each
+    image using a callback in the page's Javascript. It works well but may be
+    unstable as I work to get GRPC working on GCP.
 </p>
 
+<p>
+    Although it is a bit tedious to set up a GRPC server it was not too
+    difficult to figure out. TLS is required for GCP and is not a bad idea in
+    any case so that is being used.
+</p>
+
+<!-- First image -->
 <div id="#image-0"></div>
 
+<!-- Second image -->
 <div id="#image-1"></div>
 
+<!-- Third image -->
 <div id="#image-2"></div>
 
+<!-- Fourth image -->
 <div id="#image-3"></div>
 
+<!-- Fifth image -->
 <div id="#image-4"></div>
 
 {{ template "footer.html" . }}

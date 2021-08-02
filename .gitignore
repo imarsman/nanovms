@@ -24,3 +24,5 @@ build/config/config.json
 app/.context
 build/nanoapp*
 app/tweets/bearer_token.txt
+app/servercert.pem
+app/serverkey.pem

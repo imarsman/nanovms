@@ -17,6 +17,8 @@ import (
 	cache "github.com/patrickmn/go-cache"
 	"google.golang.org/grpc"
 
+	// "github.com/imarsman/nanovms/app"
+
 	"github.com/imarsman/nanovms/app/grpcpass"
 	"github.com/imarsman/nanovms/app/tweets"
 )
@@ -179,18 +181,26 @@ func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 
 func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	// serverAddr := "localhost:9000"
-	serverAddr := "[::1]:9000"
+	serverAddr := "[::1]:9080"
 
 	var opts []grpc.DialOption
+
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithBlock())
+
+	// opts = append(opts, grpc.wi)
+	// opts = append(opts, grpc.)
 	// opts = append(opts, grpc.UseCompressor)
 
-	conn, err := grpc.Dial(serverAddr, opts...)
+	// conn, err := grpc.Dial(serverAddr, opts...)
+	// if err != nil {
+	// 	log.Fatalf("fail to dial: %v", err)
+	// }
+	// fmt.Println("credentials", *ClientCredentials())
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*ClientCredentials()))
 	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
+		log.Fatalf("did not connect: %v", err)
 	}
-
 	client := grpcpass.NewXKCDServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

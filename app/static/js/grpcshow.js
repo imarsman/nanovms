@@ -24,7 +24,7 @@ window.onload = function () {
 // loadTweetInID load 
 function loadImgInID(id) {
 
-    console.log("id " + id)
+    // console.log("id " + id)
     getImageInfo(id)
 }
 

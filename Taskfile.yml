@@ -33,6 +33,9 @@ tasks:
     #   instanceid: 
     #     sh: $(echo "ops instance list -t {{.cloud}} -c {{.configpath}}")
     cmds:
+      # See https://github.com/FiloSottile/mkcert
+      # Make certificate for grpc tls
+      - mkcert -key-file serverkey.pem -cert-file servercert.pem grpc.com
       # Use of embed to flag context - used for port use
       - echo "cloud" > .context
       - GOOS=linux go build .

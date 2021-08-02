@@ -1,16 +1,27 @@
 syntax = "proto3";
 package grpcpass;
 
-// nanovms/app]$: protoc -I. --go_out=./grpcpass/proto grpcpass/proto/grpcpass.proto
+// nanovms/app]$: protoc -I. --go_out=./grpcpass/proto
+// grpcpass/proto/grpcpass.proto
+// This one works
+// nanovms/app]$: protoc -I. --go_out=./grpcpass/proto --go-grpc_out=./grpcpass/proto grpcpass/proto/grpcpass.proto
 option go_package = "..;grpcpass";
 
 message Message {
   int64  number   = 1;
-  string img      = 2;
-  string title    = 3;
-  string alt      = 4;
+  string date     = 2;
+  string img      = 3;
+  string title    = 4;
+  string alt      = 5;
+}
+
+message MessageNumber {
+  int64  number   = 1;
 }
 
 service XKCDService {
-  rpc GetXKCD(Message) returns (Message) {}
+  rpc GetXKCD(MessageNumber) returns (Message) {}
 }
+
+
+

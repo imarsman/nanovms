@@ -62,6 +62,8 @@ func main() {
 
 	// For page tweets
 	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
+	// For GRPC test using XKCD fetches
+	router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
 	// Default
 	router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")

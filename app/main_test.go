@@ -62,11 +62,11 @@ func TestCallGRPC(t *testing.T) {
 	defer cancel()
 
 	number := grpcpass.MessageNumber{}
-	number.Number = 1001
+	number.Number = 0
 
 	t.Log("client", client)
 	// callOpts := grpc.Cal
-	callOption := grpc.MaxCallRecvMsgSize(0)
+	callOption := grpc.MaxCallRecvMsgSize(5000)
 	message, err := client.GetXKCD(ctx, &number, callOption)
 	if err != nil {
 		log.Fatalf("%v.GetXKCD(_) = _, %v: ", client, err)

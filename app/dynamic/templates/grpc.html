@@ -1,31 +1,28 @@
 {{ template "header-grpc.html" . }}
 
-<h1>Sample GRPC passthrough</h1>
+<h1>Sample GRPC passthrough showing random xkcd cartoons</h1>
 
 <p>
-    This is a work in progress. So far I have figured out how to write a
-    protocol buffer definition and compile it to bridge code. The GRPC server
-    starts without error but I have not done the tie-together work or the
-    handler.
+    This is an overly complicated page in that it uses a GRPC server started by
+    the application which is queried by the handler. The GRPC call itself calls
+    a simple HTTP client which gives the data back. The GRCP client gets the
+    data then the handler sends it as a JSON payload to the page.
 </p>
 
 <p>
-    The goal here is to write a simple GRPC server that calls a function that
-    gets a link to data for a day's XKCD cartoon. The GRPC function is to be
-    called by a client in a handler function that recieves the request from a
-    browser. Browsers are not able to handle the GRPC protocol so go-betweening
-    is necessary. There are formal projects for this that I will look into but
-    for now I will do this.
+    Although it is a bit tedious to set up a GRPC server it was not too
+    difficult to figure out. There are many advanced features such as streaming
+    and TLS and authorization that I have not explored.
 </p>
 
-<div id="#xkcd-0"></div>
+<div id="#image-0"></div>
 
-<div id="#xkcd-1"></div>
+<div id="#image-1"></div>
 
-<div id="#xkcd-2"></div>
+<div id="#image-2"></div>
 
-<div id="#xkcd-3"></div>
+<div id="#image-3"></div>
 
-<div id="#xkcd-4"></div>
+<div id="#image-4"></div>
 
 {{ template "footer.html" . }}

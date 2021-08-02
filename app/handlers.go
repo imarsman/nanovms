@@ -159,6 +159,7 @@ func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithBlock())
+	// opts = append(opts, grpc.UseCompressor)
 
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
@@ -171,10 +172,9 @@ func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	number := grpcpass.MessageNumber{}
-	number.Number = 1001
+	number.Number = 0
 
-	// callOpts := grpc.Cal
-	callOption := grpc.MaxCallRecvMsgSize(10000)
+	callOption := grpc.MaxCallRecvMsgSize(5000)
 	message, err := client.GetXKCD(ctx, &number, callOption)
 	if err != nil {
 		log.Fatalf("%v.GetXKCD(_) = _, %v: ", client, err)
@@ -182,6 +182,7 @@ func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 
 	xkcd := grpcpass.NewXKCD()
 	xkcd.Number = int(message.GetNumber())
+	xkcd.Img = message.GetImg()
 	xkcd.Date = message.Date
 	xkcd.Title = message.GetTitle()
 	xkcd.AltText = message.Alt

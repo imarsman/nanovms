@@ -3,7 +3,6 @@ package grpcpass
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -14,16 +13,26 @@ import (
 
 // XKCD a struct to contain the elements of an xkcd image to be used by the app
 type XKCD struct {
-	Number  int    `json:"number"`
-	Title   string `json:"title"`
-	AltText string `json:"alt"`
-	Img     string `json:"img"`
-	Date    string `json:"date"`
+	Number     int    `json:"number"`
+	Date       string `json:"date"`
+	Title      string `json:"title"`
+	AltText    string `json:"alt"`
+	Img        string `json:"img"`
+	NextLoadMS int    `json:"nextloadms"` // random next load time
 }
 
 // NewXKCD get a reference to a new XKCD struct
 func NewXKCD() *XKCD {
 	xkcd := XKCD{}
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	n := r.Intn(120)
+	if n < 20 {
+		n += 20
+	}
+
+	// next load in random number of milliseconds from 30 up to 120
+	xkcd.NextLoadMS = int(n * int(time.Second))
 
 	return &xkcd
 }
@@ -50,8 +59,6 @@ Notes:
 // Presumably this will be used by the GRPC infrastructure
 // func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber, opts ...grpc.CallOption) (*Message, error) {
 func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber) (*Message, error) {
-	log.Printf("Receive message body from client: %d", in.GetNumber())
-
 	var bytes []byte
 	var err error
 
@@ -105,7 +112,7 @@ func fetchXKCD(num int) ([]byte, error) {
 	}
 
 	url := "http://xkcd.com/" + fmt.Sprintf("%v", num) + "/info.0.json"
-	fmt.Println(url)
+	// fmt.Println(url)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -138,6 +145,8 @@ func parseJSON(input []byte) (*XKCD, error) {
 		AltText: parsed.Get("alt").String(),
 		Img:     parsed.Get("img").String(),
 	}
+
+	// fmt.Println("title", xkcd.Title)
 
 	// Maybe the safe_title is not there sometimes
 	if xkcd.Title == "" {

@@ -26,13 +26,13 @@ func NewXKCD() *XKCD {
 	xkcd := XKCD{}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	n := r.Intn(180)
-	if n < 20 {
-		n += 20
+	n := r.Intn(300)
+	if n < 90 {
+		n += 90
 	}
 
 	// next load in random number of milliseconds from 30 up to 120
-	xkcd.NextLoadMS = int(n * int(time.Second))
+	xkcd.NextLoadMS = int(n * int(time.Second) / 1000000)
 
 	return &xkcd
 }
@@ -137,18 +137,25 @@ func ParseXKCDJSON(input []byte) (*XKCD, error) {
 
 	date := time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
 
-	xkcd := XKCD{
-		Date:    date,
-		Number:  int(parsed.Get("num").Int()),
-		Title:   parsed.Get("safe_title").String(),
-		AltText: parsed.Get("alt").String(),
-		Img:     parsed.Get("img").String(),
-	}
+	xkcd := NewXKCD()
+	xkcd.Date = date
+	xkcd.Number = int(parsed.Get("num").Int())
+	xkcd.Title = parsed.Get("safe_title").String()
+	xkcd.AltText = parsed.Get("alt").String()
+	xkcd.Img = parsed.Get("img").String()
+
+	// xkcd := XKCD{
+	// 	Date:    date,
+	// 	Number:  int(parsed.Get("num").Int()),
+	// 	Title:   parsed.Get("safe_title").String(),
+	// 	AltText: parsed.Get("alt").String(),
+	// 	Img:     parsed.Get("img").String(),
+	// }
 
 	// Maybe the safe_title is not there sometimes
 	if xkcd.Title == "" {
 		xkcd.Title = parsed.Get("title").String()
 	}
 
-	return &xkcd, nil
+	return xkcd, nil
 }

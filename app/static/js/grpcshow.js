@@ -73,10 +73,11 @@ function setImageData(data) {
     // Not finished. Need to get and use delay from server
     let delay = data['nextloadms'];
 
+    reloadSec = data['nextloadms'] / 1000
     // &#8212; is an em dash
     e.innerHTML = "<img title='" + title + "' src='" + img + "' alt='" + altText + "'/>" +
         "<p style='margin:0px 0px 30px 0px'><small style='font-size: .8em'>" + 
-        date + ' &#8212; "' + title + '"' + "</small></p>"
+        date + ' &#8212; "' + title + '"' + " &#8212; reload in " + reloadSec + " sec</small></p>"
 
 
     // console.log("id " + id + " Date " + data['date'] + " for " + data['id'] + " delay " + delay)

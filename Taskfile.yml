@@ -66,7 +66,7 @@ tasks:
     desc: create image locally
     dir: ./build
     cmds:
-      # - task: build
+      - task: build
       - ops image create {{.applinux}} -c {{.configpath}} -i {{.imagename}} -t {{.cloud}}
   delete-image:
     desc: delete the image

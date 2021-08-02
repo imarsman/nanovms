@@ -132,7 +132,8 @@ func main() {
 		go func() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
-			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
+			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			// Default
 			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 			http.ListenAndServe(":8000", router)
@@ -140,7 +141,8 @@ func main() {
 		go func() {
 			fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
 			if err := grpcServer.Serve(lis); err != nil {
-				log.Fatalf("failed to serve: %s", err)
+				fmt.Printf("failed to serve: %s", err)
+				// log.Fatalf("failed to serve: %s", err)
 			}
 		}()
 	} else {

@@ -3,14 +3,15 @@
 <h1>Sample GRPC passthrough showing random xkcd cartoons</h1>
 
 <p>
-    Note: this application is currently available on GCP, which does not allow
-    http2 traffic unless it is used for TCP. If http2 communication is attempted
-    without TLS GCP will downgrade the connection to http 1.1 and GRPC will not
-    work. I am in the process of adding and testing TLS for the test server in
-    the app and for the client connecting. The fallback position is to skip the
-    GRPC call and just call the xkcd endpoint via a function. The GRPC aspect is
-    not useful except as a way to experiment with GRPC and passing through GRPC
-    calls to regular http endpoints.
+    Note: this application is currently crashing due to some sort of conflict
+    with HTTP2 and GCP. GCP does not allow HTTP2 traffic unless it is used for
+    TCP. If HTTP2 communication is attempted without TLS GCP will downgrade the
+    connection to http 1.1 and GRPC will not work. I am in the process of adding
+    and testing TLS for the test server in the app and for the client
+    connecting. The fallback position is to skip the GRPC call and just call the
+    xkcd endpoint via a function. The GRPC aspect is not useful except as a way
+    to experiment with GRPC and passing through GRPC calls to regular HTTP
+    endpoints.
 </p>
 <p>
     This is an overly complicated page in that it uses a GRPC server started by

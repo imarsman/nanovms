@@ -11,7 +11,9 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/imarsman/nanovms/app/grpcpass"
 	"google.golang.org/grpc"
+	// "github.com/imarsman/nanovms/app/grpcpass"
 )
 
 //go:embed dynamic/*
@@ -24,14 +26,14 @@ var static embed.FS
 var transactionJSON string
 
 //go:embed .context
-var context string
+var runContext string
 
 // Main method for app. A simple router and static, struct/json producing
 // template, Golang template pages, and a Twitter API handler.
 func main() {
 	infiniteWait := make(chan string)
 
-	cloud := strings.TrimSpace(context) == "cloud"
+	cloud := strings.TrimSpace(runContext) == "cloud"
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -69,7 +71,15 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	// https://grpc.io/docs/languages/go/basics/
+	// https://github.com/grpc/grpc-go/tree/master/examples
+	// var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer()
+	// grpcServer.RegisterService(grpcpass.XKCDService_ServiceDesc, grpcServer)
+	grpcpass.RegisterXKCDServiceServer(grpcServer, &grpcpass.XKCDService{})
+	fmt.Printf("grpc server service info: %+v\n", grpcServer.GetServiceInfo())
+	// .RegisterService(grpcpass.XKCDService_ServiceDesc, grpcServer)
+	// grpcServer.RegisterService(grpcpass.GetXKCD, grpcpass.XKCDService)
 
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more

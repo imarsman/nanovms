@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io/fs"
 	"log"
@@ -14,7 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	cache "github.com/patrickmn/go-cache"
+	"google.golang.org/grpc"
 
+	"github.com/imarsman/nanovms/app/grpcpass"
 	"github.com/imarsman/nanovms/app/tweets"
 )
 
@@ -148,6 +151,50 @@ func init() {
 		log.Println("Problems with regular expression:", err)
 		os.Exit(-1)
 	}
+}
+
+func xkcdHandler(w http.ResponseWriter, r *http.Request) {
+	serverAddr := "localhost:9000"
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithBlock())
+
+	conn, err := grpc.Dial(serverAddr, opts...)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+
+	client := grpcpass.NewXKCDServiceClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	number := grpcpass.MessageNumber{}
+	number.Number = 1001
+
+	// callOpts := grpc.Cal
+	callOption := grpc.MaxCallRecvMsgSize(10000)
+	message, err := client.GetXKCD(ctx, &number, callOption)
+	if err != nil {
+		log.Fatalf("%v.GetXKCD(_) = _, %v: ", client, err)
+	}
+
+	xkcd := grpcpass.NewXKCD()
+	xkcd.Number = int(message.GetNumber())
+	xkcd.Date = message.Date
+	xkcd.Title = message.GetTitle()
+	xkcd.AltText = message.Alt
+
+	json, err := json.MarshalIndent(&xkcd, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", jsonContentType)
+	w.Write(json)
 }
 
 // twitterHandler get an id for a tweet

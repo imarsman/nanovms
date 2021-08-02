@@ -14,17 +14,28 @@ import (
 
 // XKCD a struct to contain the elements of an xkcd image to be used by the app
 type XKCD struct {
-	Day     int    `json:"day"`
-	Month   int    `json:"month"`
-	Year    int    `json:"year"`
 	Number  int    `json:"number"`
 	Title   string `json:"title"`
 	AltText string `json:"alt"`
 	Img     string `json:"img"`
+	Date    string `json:"date"`
 }
 
-// Server a server
-type Server struct {
+// NewXKCD get a reference to a new XKCD struct
+func NewXKCD() *XKCD {
+	xkcd := XKCD{}
+
+	return &xkcd
+}
+
+// MessageNumber input for requests for a message
+// type MessageNumber struct {
+// 	Number int `json:"number"`
+// }
+
+// XKCDService a server
+type XKCDService struct {
+	UnimplementedXKCDServiceServer
 }
 
 /*
@@ -37,13 +48,24 @@ Notes:
 
 // GetXKCD get an xkcd url and description
 // Presumably this will be used by the GRPC infrastructure
-func (s *Server) GetXKCD(ctx context.Context, in *Message) (*Message, error) {
+// func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber, opts ...grpc.CallOption) (*Message, error) {
+func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber) (*Message, error) {
 	log.Printf("Receive message body from client: %d", in.GetNumber())
 
+	var bytes []byte
+	var err error
+
 	num := int(in.GetNumber())
-	bytes, err := fetchXKCD(num)
-	if err != nil {
-		return &Message{}, err
+	if num == 0 {
+		bytes, err = fetchRandomXKCD()
+		if err != nil {
+			return &Message{}, err
+		}
+	} else {
+		bytes, err = fetchXKCD(num)
+		if err != nil {
+			return &Message{}, err
+		}
 	}
 
 	xkcd, err := parseJSON(bytes)
@@ -53,6 +75,7 @@ func (s *Server) GetXKCD(ctx context.Context, in *Message) (*Message, error) {
 
 	msg := &Message{
 		Number: int64(xkcd.Number),
+		Date:   xkcd.Date,
 		Img:    xkcd.Img,
 		Title:  xkcd.Title,
 		Alt:    xkcd.AltText,
@@ -102,10 +125,14 @@ func fetchXKCD(num int) ([]byte, error) {
 func parseJSON(input []byte) (*XKCD, error) {
 	parsed := gjson.Parse(string(input))
 
+	d := int(parsed.Get("day").Int())
+	m := int(parsed.Get("month").Int())
+	y := int(parsed.Get("year").Int())
+
+	date := time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+
 	xkcd := XKCD{
-		Day:     int(parsed.Get("day").Int()),
-		Month:   int(parsed.Get("day").Int()),
-		Year:    int(parsed.Get("year").Int()),
+		Date:    date,
 		Number:  int(parsed.Get("num").Int()),
 		Title:   parsed.Get("safe_title").String(),
 		AltText: parsed.Get("alt").String(),

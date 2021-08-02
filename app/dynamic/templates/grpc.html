@@ -3,6 +3,12 @@
 <h1>Sample GRPC passthrough showing random xkcd cartoons</h1>
 
 <p>
+    Note: There may be a networking issue with the GRPC calls. I will work on
+    it. Sadly this is likely because GCP handles http2 connections differently.
+    I have to find  out if I can bypass this. In the meantime I have skipped the
+    GRPC call and just use an HTTP one.
+</p>
+<p>
     This is an overly complicated page in that it uses a GRPC server started by
     the application which is queried by the handler. The GRPC call itself calls
     a simple HTTP client which gives the data back. The GRCP client gets the

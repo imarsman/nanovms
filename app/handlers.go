@@ -153,8 +153,33 @@ func init() {
 	}
 }
 
+func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
+	bytes, err := grpcpass.FetchRandomXKCD()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	xkcd, err := grpcpass.ParseXKCDJSON(bytes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json, err := json.MarshalIndent(&xkcd, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", jsonContentType)
+	w.Write(json)
+
+}
+
 func xkcdHandler(w http.ResponseWriter, r *http.Request) {
-	serverAddr := "localhost:9000"
+	// serverAddr := "localhost:9000"
+	serverAddr := "[::1]:9000"
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())

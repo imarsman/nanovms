@@ -62,11 +62,8 @@ func main() {
 
 	// For page tweets
 	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
-	// For GRPC test using XKCD fetches
-	router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
-	// Default
-	router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+	// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
 	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
@@ -89,6 +86,10 @@ func main() {
 	if cloud {
 		go func() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
+			// For GRPC test using XKCD fetches
+			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			// Default
+			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 			http.ListenAndServe(":8000", router)
 		}()
 		go func() {
@@ -100,6 +101,12 @@ func main() {
 	} else {
 		go func() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
+			// For GRPC test using XKCD fetches
+			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			// Default
+			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+
+			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			http.ListenAndServe(":8000", router)
 		}()
 		go func() {

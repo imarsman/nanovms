@@ -64,18 +64,18 @@ func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber) (*Message,
 
 	num := int(in.GetNumber())
 	if num == 0 {
-		bytes, err = fetchRandomXKCD()
+		bytes, err = FetchRandomXKCD()
 		if err != nil {
 			return &Message{}, err
 		}
 	} else {
-		bytes, err = fetchXKCD(num)
+		bytes, err = FetchXKCD(num)
 		if err != nil {
 			return &Message{}, err
 		}
 	}
 
-	xkcd, err := parseJSON(bytes)
+	xkcd, err := ParseXKCDJSON(bytes)
 	if err != nil {
 		return &Message{}, err
 	}
@@ -98,15 +98,15 @@ func (s *XKCDService) GetXKCD(ctx context.Context, in *MessageNumber) (*Message,
 	See: https://xkcd.com/json.html
 */
 
-// fetchXKCD fetch info for a comic for a day from xkcd
-func fetchRandomXKCD() ([]byte, error) {
+// FetchRandomXKCD fetch info for a comic for a day from xkcd
+func FetchRandomXKCD() ([]byte, error) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	return fetchXKCD(r.Intn(2000) + 1)
+	return FetchXKCD(r.Intn(2000) + 1)
 }
 
-// fetchXKCD fetch info for a comic for a day from xkcd
-func fetchXKCD(num int) ([]byte, error) {
+// FetchXKCD fetch info for a comic for a day from xkcd
+func FetchXKCD(num int) ([]byte, error) {
 	if num > 2000 {
 		return []byte{}, fmt.Errorf("Invalid index %d", num)
 	}
@@ -127,9 +127,9 @@ func fetchXKCD(num int) ([]byte, error) {
 	return bytes, nil
 }
 
-// parseJSON rather than use a map[string]interface{} use a library that handles
+// ParseXKCDJSON rather than use a map[string]interface{} use a library that handles
 // JSON Path and type conversion.
-func parseJSON(input []byte) (*XKCD, error) {
+func ParseXKCDJSON(input []byte) (*XKCD, error) {
 	parsed := gjson.Parse(string(input))
 
 	d := int(parsed.Get("day").Int())

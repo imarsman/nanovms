@@ -26,7 +26,7 @@ func NewXKCD() *XKCD {
 	xkcd := XKCD{}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	n := r.Intn(120)
+	n := r.Intn(180)
 	if n < 20 {
 		n += 20
 	}

@@ -181,7 +181,7 @@ func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 
 func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	// serverAddr := "localhost:9000"
-	serverAddr := "[::1]:9000"
+	serverAddr := "[::1]:5222"
 
 	var opts []grpc.DialOption
 

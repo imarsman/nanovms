@@ -26,6 +26,9 @@ intermittently be unavailable if I am doing work on the code and redeploying.
   - image on GCP not deleted properly first so that does not get updated
 - creating instance from image
 - accessing unikernal instance via http://theip/transactions
+- Twitter API usage demo
+- GRPC demo involved in getting xkcd images for a page
+  - Currently issues tied to HTTP2 on GCP
 
 ## What does not work
 

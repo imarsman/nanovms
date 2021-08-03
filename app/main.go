@@ -111,7 +111,7 @@ func main() {
 
 	// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
-	lis, err := net.Listen("tcp", ":9000")
+	lis, err := net.Listen("tcp", ":5222")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -149,8 +149,8 @@ func main() {
 		go func() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
-			// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
-			router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			// Default
 			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 

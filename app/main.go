@@ -27,9 +27,6 @@ var dynamic embed.FS
 //go:embed static/*
 var static embed.FS
 
-// //go:embed serverkey.pem servercert.pem
-// var certs embed.FS
-
 //go:embed serverkey.pem
 var serverkey []byte
 

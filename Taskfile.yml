@@ -27,7 +27,7 @@ tasks:
     desc: build native and linux apps for running in novavms
     dir: ./app
     vars:
-      secretspath: ./handlers/secrets
+      secretspath: ./creds/secrets
     # vars:
     #   instanceid: 
     #     sh: $(echo "ops instance list -t {{.cloud}} -c {{.configpath}}")

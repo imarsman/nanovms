@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"embed"
 	"encoding/json"
 	"io/fs"
@@ -17,10 +14,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/nats-io/nats.go"
 	cache "github.com/patrickmn/go-cache"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
 	// "github.com/imarsman/nanovms/app"
 
@@ -29,14 +25,14 @@ import (
 	"github.com/imarsman/nanovms/app/tweets"
 )
 
-//go:embed secrets/servercert.pem
-var servercert []byte
+// //go:embed secrets/servercert.pem
+// var servercert []byte
 
-//go:embed secrets/serverkey.pem
-var serverkey []byte
+// //go:embed secrets/serverkey.pem
+// var serverkey []byte
 
-var transportCredentials credentials.TransportCredentials
-var clientCredentials credentials.TransportCredentials
+// var transportCredentials credentials.TransportCredentials
+// var clientCredentials credentials.TransportCredentials
 
 //go:embed dynamic/*
 var dynamic embed.FS
@@ -75,38 +71,88 @@ type PageData struct {
 	ServerAddress string
 }
 
-func TransportCredentials() credentials.TransportCredentials {
-	return transportCredentials
+var router *mux.Router
+
+// func TransportCredentials() credentials.TransportCredentials {
+// 	return transportCredentials
+// }
+
+// GetRouter get reference to HTTP router
+func GetRouter(inCloud bool) *mux.Router {
+	router = mux.NewRouter().StrictSlash(true)
+
+	// Sample JSON returning function
+	router.HandleFunc("/transactions", GetTransactionsHandler).Methods(http.MethodGet).Name("Sample transactions")
+
+	// We need to convert the embed FS to an io.FS in order to work with it
+	fsys := fs.FS(static)
+
+	// Handle static content
+	// Note that we use http.FS to access our io.FS instead of trying to treat
+	// it like a local directory. If you run the build in place it will work but
+	// if you move the binary the files will not be available as http.Dir looks
+	// for a locally available fileystem, not an embed one.
+
+	// Normally with a system filesystem we'd use
+	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
+
+	// Set file serving for css files
+	contentCSS, _ := fs.Sub(fsys, "static/css")
+	router.PathPrefix("/css").Handler(http.StripPrefix("/css", http.FileServer(http.FS(contentCSS)))).Name("CSS Files")
+
+	// Set file serving for JS files
+	contentJS, _ := fs.Sub(fsys, "static/js")
+	router.PathPrefix("/js").Handler(http.StripPrefix("/js", http.FileServer(http.FS(contentJS)))).Name("JS Files")
+
+	// For page tweets
+	router.PathPrefix("/gettweet").HandlerFunc(TwitterHandler).Methods(http.MethodGet).Name("Get tweets")
+
+	// NATS demo
+	router.PathPrefix("/msg").HandlerFunc(NatsHandler).Methods(http.MethodGet).Name("Get NATS request")
+
+	if inCloud {
+		// For GRPC test using XKCD fetches
+		router.PathPrefix("/getimage").HandlerFunc(XkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
+		// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get
+		// via GRPC")
+
+	} else {
+		router.PathPrefix("/getimage").HandlerFunc(grpcpass.XkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
+
+	}
+	router.PathPrefix("/").HandlerFunc(TemplatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+
+	return router
 }
 
 func init() {
-	// Set up certificate that client and server can use
-	cert, err := tls.X509KeyPair(servercert, serverkey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// // Set up certificate that client and server can use
+	// cert, err := tls.X509KeyPair(servercert, serverkey)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	// Make the CertPool.
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(servercert)
+	// // Make the CertPool.
+	// pool := x509.NewCertPool()
+	// pool.AppendCertsFromPEM(servercert)
 
-	clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
+	// clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
 
-	// Create the TLS credentials for GRPC server
-	transportCredentials = credentials.NewTLS(&tls.Config{
-		ClientAuth: tls.NoClientCert,
-		// Don't ask for a client certificate for now
-		// tls.RequireAndVerifyClientCert,
-		Certificates:       []tls.Certificate{cert},
-		ClientCAs:          pool,
-		InsecureSkipVerify: false,
-	})
+	// // Create the TLS credentials for GRPC server
+	// transportCredentials = credentials.NewTLS(&tls.Config{
+	// 	ClientAuth: tls.NoClientCert,
+	// 	// Don't ask for a client certificate for now
+	// 	// tls.RequireAndVerifyClientCert,
+	// 	Certificates:       []tls.Certificate{cert},
+	// 	ClientCAs:          pool,
+	// 	InsecureSkipVerify: false,
+	// })
 }
 
-// ClientCredentials credentials for connecting to GRPC
-func ClientCredentials() *credentials.TransportCredentials {
-	return &clientCredentials
-}
+// // ClientCredentials credentials for connecting to GRPC
+// func ClientCredentials() *credentials.TransportCredentials {
+// 	return &clientCredentials
+// }
 
 // uniqueToken get a random string that can be used as a CSRF header and later to
 // fetch the server-stored JSR token string.
@@ -274,54 +320,6 @@ func XkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", jsonContentType)
 	w.Write(json)
 
-}
-
-// XkcdHandler handler for XKCD data
-func XkcdHandler(w http.ResponseWriter, r *http.Request) {
-	// serverAddr := "localhost:9000"
-	serverAddr := "[::1]:5222"
-
-	var opts []grpc.DialOption
-
-	opts = append(opts, grpc.WithInsecure())
-	opts = append(opts, grpc.WithBlock())
-
-	// Connect with credentials
-	// Currently trying only to use TLS to allow GCP to permit the connection
-	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*ClientCredentials()))
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	client := grpcpass.NewXKCDServiceClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	number := grpcpass.MessageNumber{}
-	number.Number = 0
-
-	callOption := grpc.MaxCallRecvMsgSize(5000)
-	message, err := client.GetXKCD(ctx, &number, callOption)
-	if err != nil {
-		log.Fatalf("%v.GetXKCD(_) = _, %v: ", client, err)
-	}
-
-	xkcd := grpcpass.NewXKCD()
-	xkcd.Number = int(message.GetNumber())
-	xkcd.Img = message.GetImg()
-	xkcd.Date = message.Date
-	xkcd.Title = message.GetTitle()
-	xkcd.AltText = message.Alt
-
-	json, err := json.MarshalIndent(&xkcd, "", "  ")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Add("Content-Type", jsonContentType)
-	w.Write(json)
 }
 
 // TwitterHandler get an id for a tweet

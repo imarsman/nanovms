@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"text/template"
 
+	"github.com/nats-io/nats-server/v2/server"
+	stand "github.com/nats-io/nats-streaming-server/server"
 	"github.com/nats-io/nats.go"
 )
 
@@ -30,6 +32,7 @@ var templates *template.Template // templates for dynamic pages
 var routeMatch *regexp.Regexp    // template route regex
 
 var nc *nats.Conn
+var natsServer *server.Server
 
 // http://api.plos.org/solr/examples/
 // http://api.plos.org/search?q=title:covid
@@ -79,6 +82,11 @@ func NewQuery(searchTerm string, start int) *Query {
 	return &q
 }
 
+// NATServer get reference to NATS server
+func NATServer() *server.Server {
+	return natsServer
+}
+
 // https://golangrepo.com/repo/nats-io-nats-go-messaging
 func init() {
 	// We need to convert the embed FS to an io.FS in order to work with it
@@ -109,6 +117,20 @@ func init() {
 		sample := fetchSearch(string(m.Data))
 		m.Respond([]byte(sample))
 	})
+
+	// https://sourcegraph.com/github.com/nats-io/nats-server@6da5d2f4907a03c8ba26fc8b6ca2aed903ac80f8/-/blob/main.go
+	// Now we want to setup the monitoring port for NATS Streaming.
+	// We still need NATS Options to do so, so create NATS Options
+	// using the NewNATSOptions() from the streaming server package.
+	snopts := stand.NewNATSOptions()
+	snopts.Port = nats.DefaultPort
+	snopts.HTTPPort = 8223
+
+	// Now run the server with the streaming and streaming/nats options.
+	natsServer, err = server.NewServer(snopts)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func fetchSearch(search string) string {

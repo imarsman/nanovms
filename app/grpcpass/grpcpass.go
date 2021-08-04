@@ -1,15 +1,27 @@
 package grpcpass
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
+	"github.com/imarsman/nanovms/app/creds"
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
+
+const ( // various content types
+	jsonContentType = "application/json; charset=utf-8"
+	textContentType = "text/plain; charset=utf-8"
+	htmlContentType = "text/html; charset=utf-8"
+)
+
+var grpcServer *grpc.Server
 
 // XKCD a struct to contain the elements of an xkcd image to be used by the app
 type XKCD struct {
@@ -45,6 +57,71 @@ func NewXKCD() *XKCD {
 // XKCDService a server
 type XKCDService struct {
 	UnimplementedXKCDServiceServer
+}
+
+// GRPCServer get GRPC server
+func GRPCServer() *grpc.Server {
+	return grpcServer
+}
+
+func init() {
+
+	// https://grpc.io/docs/languages/go/basics/
+	// https://github.com/grpc/grpc-go/tree/master/examples
+	// var opts []grpc.ServerOption
+	grpcServer = grpc.NewServer(grpc.Creds(creds.TransportCredentials()))
+
+	RegisterXKCDServiceServer(grpcServer, &XKCDService{})
+	fmt.Printf("grpc server: %+v\n", grpcServer.GetServiceInfo())
+
+}
+
+// XkcdHandler handler for XKCD data
+func XkcdHandler(w http.ResponseWriter, r *http.Request) {
+	// serverAddr := "localhost:9000"
+	serverAddr := "[::1]:5222"
+
+	var opts []grpc.DialOption
+
+	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithBlock())
+
+	// Connect with credentials
+	// Currently trying only to use TLS to allow GCP to permit the connection
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*creds.ClientCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	client := NewXKCDServiceClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	number := MessageNumber{}
+	number.Number = 0
+
+	callOption := grpc.MaxCallRecvMsgSize(5000)
+	message, err := client.GetXKCD(ctx, &number, callOption)
+	if err != nil {
+		log.Fatalf("%v.GetXKCD(_) = _, %v: ", client, err)
+	}
+
+	xkcd := NewXKCD()
+	xkcd.Number = int(message.GetNumber())
+	xkcd.Img = message.GetImg()
+	xkcd.Date = message.Date
+	xkcd.Title = message.GetTitle()
+	xkcd.AltText = message.Alt
+
+	json, err := json.MarshalIndent(&xkcd, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", jsonContentType)
+	w.Write(json)
 }
 
 /*

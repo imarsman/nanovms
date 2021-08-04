@@ -32,3 +32,6 @@ app/tweets/secrets/bearer_token.txt
 app/handlers/secrets/secretsserverkey.pem
 app/handlers/secrets/servercert.pem
 app/handlers/secrets/serverkey.pem
+app/creds/secrets/secretsserverkey.pem
+app/creds/secrets/servercert.pem
+app/creds/secrets/serverkey.pem

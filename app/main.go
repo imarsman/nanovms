@@ -42,10 +42,10 @@ func main() {
 		fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 	}
 	go func() {
-		router := handlers.GetRouter(isCloud)
+		httpRouter := handlers.GetRouter(isCloud)
 
 		fmt.Printf("Starting HTTP server on port %v\n", "8000")
-		if err := http.ListenAndServe(":8000", router); err != nil {
+		if err := http.ListenAndServe(":8000", httpRouter); err != nil {
 			fmt.Printf("failed to serve: %s", err)
 		}
 	}()

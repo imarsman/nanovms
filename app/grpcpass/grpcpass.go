@@ -49,11 +49,6 @@ func NewXKCD() *XKCD {
 	return &xkcd
 }
 
-// MessageNumber input for requests for a message
-// type MessageNumber struct {
-// 	Number int `json:"number"`
-// }
-
 // XKCDService a server
 type XKCDService struct {
 	UnimplementedXKCDServiceServer
@@ -219,14 +214,6 @@ func ParseXKCDJSON(input []byte) (*XKCD, error) {
 	xkcd.Title = parsed.Get("safe_title").String()
 	xkcd.AltText = parsed.Get("alt").String()
 	xkcd.Img = parsed.Get("img").String()
-
-	// xkcd := XKCD{
-	// 	Date:    date,
-	// 	Number:  int(parsed.Get("num").Int()),
-	// 	Title:   parsed.Get("safe_title").String(),
-	// 	AltText: parsed.Get("alt").String(),
-	// 	Img:     parsed.Get("img").String(),
-	// }
 
 	// Maybe the safe_title is not there sometimes
 	if xkcd.Title == "" {

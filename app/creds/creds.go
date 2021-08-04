@@ -51,7 +51,7 @@ func init() {
 		InsecureSkipVerify: true,
 	})
 	transportCredentials = &tc
-	// clientCredentials = *(&credentials.NewClientTLSFromCert(pool, "grpc.com"))
+
 	cc := credentials.NewClientTLSFromCert(pool, "grpc.com")
 	clientCredentials = &cc
 }

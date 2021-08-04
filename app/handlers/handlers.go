@@ -25,15 +25,6 @@ import (
 	"github.com/imarsman/nanovms/app/tweets"
 )
 
-// //go:embed secrets/servercert.pem
-// var servercert []byte
-
-// //go:embed secrets/serverkey.pem
-// var serverkey []byte
-
-// var transportCredentials credentials.TransportCredentials
-// var clientCredentials credentials.TransportCredentials
-
 //go:embed dynamic/*
 var dynamic embed.FS
 
@@ -73,10 +64,6 @@ type PageData struct {
 
 var router *mux.Router
 
-// func TransportCredentials() credentials.TransportCredentials {
-// 	return transportCredentials
-// }
-
 // GetRouter get reference to HTTP router
 func GetRouter(inCloud bool) *mux.Router {
 	router = mux.NewRouter().StrictSlash(true)
@@ -86,15 +73,6 @@ func GetRouter(inCloud bool) *mux.Router {
 
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(static)
-
-	// Handle static content
-	// Note that we use http.FS to access our io.FS instead of trying to treat
-	// it like a local directory. If you run the build in place it will work but
-	// if you move the binary the files will not be available as http.Dir looks
-	// for a locally available fileystem, not an embed one.
-
-	// Normally with a system filesystem we'd use
-	// ... http.FileServer(http.Dir("static")))).Name("Documentation")
 
 	// Set file serving for css files
 	contentCSS, _ := fs.Sub(fsys, "static/css")
@@ -127,33 +105,7 @@ func GetRouter(inCloud bool) *mux.Router {
 }
 
 func init() {
-	// // Set up certificate that client and server can use
-	// cert, err := tls.X509KeyPair(servercert, serverkey)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// // Make the CertPool.
-	// pool := x509.NewCertPool()
-	// pool.AppendCertsFromPEM(servercert)
-
-	// clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
-
-	// // Create the TLS credentials for GRPC server
-	// transportCredentials = credentials.NewTLS(&tls.Config{
-	// 	ClientAuth: tls.NoClientCert,
-	// 	// Don't ask for a client certificate for now
-	// 	// tls.RequireAndVerifyClientCert,
-	// 	Certificates:       []tls.Certificate{cert},
-	// 	ClientCAs:          pool,
-	// 	InsecureSkipVerify: false,
-	// })
 }
-
-// // ClientCredentials credentials for connecting to GRPC
-// func ClientCredentials() *credentials.TransportCredentials {
-// 	return &clientCredentials
-// }
 
 // uniqueToken get a random string that can be used as a CSRF header and later to
 // fetch the server-stored JSR token string.

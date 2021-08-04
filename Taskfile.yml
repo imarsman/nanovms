@@ -6,6 +6,14 @@
 # This taskfile will enable local building of the application, building of an
 # ops image, and cloud deployment management.
 
+# Things needed
+# - taskf runner - see above
+# - mkcert - https://github.com/FiloSottile/mkcert
+# - nkey generator
+#   - go get github.com/nats-io/nkeys/nk
+#   - https://github.com/nats-io/nkeys/blob/master/nk/README.md
+
+
 version: '3'
 
 vars:
@@ -28,13 +36,13 @@ tasks:
     dir: ./app
     vars:
       secretspath: ./creds/secrets
-    # vars:
-    #   instanceid: 
-    #     sh: $(echo "ops instance list -t {{.cloud}} -c {{.configpath}}")
+      nksecretspath: ./msg/secrets
     cmds:
       # See https://github.com/FiloSottile/mkcert
       # Make certificate for grpc tls
       - mkcert -key-file {{.secretspath}}/serverkey.pem -cert-file {{.secretspath}}/servercert.pem grpc.com
+      - nk -gen user > {{.nksecretspath}}/nkuser.seed
+      - nk -inkey {{.nksecretspath}}/nkeyuser.seed -pubout > {{.nksecretspath}}/nkeyuser.pub
       # Use of embed to flag context - used for port use
       - echo "cloud" > .context
       - GOOS=linux go build .

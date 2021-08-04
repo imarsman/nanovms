@@ -34,8 +34,8 @@ var static embed.FS
 //go:embed transactions.json
 var transactionJSON string
 
-//go:embed static/assets/IanResume_go.pdf
-var resume []byte
+// //go:embed static/assets/IanResume_go.pdf
+// var resume []byte
 
 var templates *template.Template // templates for dynamic pages
 var routeMatch *regexp.Regexp    // template route regex
@@ -82,8 +82,14 @@ func GetRouter(inCloud bool) *mux.Router {
 	contentJS, _ := fs.Sub(fsys, "static/js")
 	router.PathPrefix("/js").Handler(http.StripPrefix("/js", http.FileServer(http.FS(contentJS)))).Name("JS Files")
 
+	contentAssets, _ := fs.Sub(fsys, "static/assets")
+	router.PathPrefix("/assets").Handler(http.StripPrefix("/assets", http.FileServer(http.FS(contentAssets)))).Name("asset Files")
+
 	// For page tweets
 	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
+
+	// // For page tweets
+	// router.PathPrefix("/resume").HandlerFunc(ResumeHandler).Methods(http.MethodGet).Name("Get resume")
 
 	// NATS demo
 	router.PathPrefix("/msg").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
@@ -214,16 +220,19 @@ func init() {
 	}
 }
 
-// ResumeHandler serve up resume
-func ResumeHandler(w http.ResponseWriter, r *http.Request) {
-	//Set header
-	w.Header().Set("Content-type", "application/pdf")
+// // ResumeHandler serve up resume
+// func ResumeHandler(w http.ResponseWriter, r *http.Request) {
+// 	//Set header
+// 	w.Header().Set("Content-type", "application/pdf")
 
-	//Stream to response
-	if _, err := w.Write(resume); err != nil {
-		w.WriteHeader(500)
-	}
-}
+// 	t := http.DetectContentType([]byte(resume))
+// 	fmt.Println(t)
+
+// 	//Stream to response
+// 	if _, err := w.Write(resume); err != nil {
+// 		w.WriteHeader(500)
+// 	}
+// }
 
 // natsHandler NATS request handler
 func natsHandler(w http.ResponseWriter, r *http.Request) {
@@ -313,6 +322,7 @@ func TemplatePageHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			pd.setToken(token)
 			pd.finalize()
+
 			templates.ExecuteTemplate(w, page, pd)
 			return
 		}

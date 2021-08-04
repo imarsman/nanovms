@@ -83,14 +83,14 @@ func GetRouter(inCloud bool) *mux.Router {
 	router.PathPrefix("/js").Handler(http.StripPrefix("/js", http.FileServer(http.FS(contentJS)))).Name("JS Files")
 
 	// For page tweets
-	router.PathPrefix("/gettweet").HandlerFunc(TwitterHandler).Methods(http.MethodGet).Name("Get tweets")
+	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
 
 	// NATS demo
-	router.PathPrefix("/msg").HandlerFunc(NatsHandler).Methods(http.MethodGet).Name("Get NATS request")
+	router.PathPrefix("/msg").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
 
 	if inCloud {
 		// For GRPC test using XKCD fetches
-		router.PathPrefix("/getimage").HandlerFunc(XkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
+		router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
 		// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get
 		// via GRPC")
 
@@ -225,8 +225,8 @@ func ResumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// NatsHandler NATS request handler
-func NatsHandler(w http.ResponseWriter, r *http.Request) {
+// natsHandler NATS request handler
+func natsHandler(w http.ResponseWriter, r *http.Request) {
 	// Connect to a server
 	nc, _ := nats.Connect(nats.DefaultURL)
 
@@ -250,8 +250,8 @@ func NatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(msg.Data)
 }
 
-// XkcdNoGRPCHandler handler for XKCD with no GRPC
-func XkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
+// xkcdNoGRPCHandler handler for XKCD with no GRPC
+func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := grpcpass.FetchRandomXKCD()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -275,8 +275,8 @@ func XkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// TwitterHandler get an id for a tweet
-func TwitterHandler(w http.ResponseWriter, r *http.Request) {
+// twitterHandler get an id for a tweet
+func twitterHandler(w http.ResponseWriter, r *http.Request) {
 	findTokenFromRequest(r)
 
 	td, err := tweets.GetTweetData()

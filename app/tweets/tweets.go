@@ -15,7 +15,7 @@ import (
 
 // Not necessarily ideal to embed the token as it may change but this should do
 // for a test.
-//go:embed bearer_token.txt
+//go:embed secrets/bearer_token.txt
 var token string
 
 var tweetStack *stack.Stack

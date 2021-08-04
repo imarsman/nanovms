@@ -30,11 +30,11 @@ var dynamic embed.FS
 //go:embed static/*
 var static embed.FS
 
-//go:embed serverkey.pem
-var serverkey []byte
-
-//go:embed servercert.pem
+//go:embed secrets/servercert.pem
 var servercert []byte
+
+//go:embed secrets/serverkey.pem
+var serverkey []byte
 
 //go:embed transactions.json
 var transactionJSON string

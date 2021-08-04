@@ -1,0 +1,42 @@
+{{ template "header-twitter.html" . }}
+    <h1>Sample recent Linux tweets</h1>
+
+    <p>
+        This is a work in progress.
+
+        I intended for this to be a set of 10 tweets containing "linux" (should
+        be safe) updating at random times, but the Twitter API adds in a very
+        large amount of HTML instead of putting HTML inside of the div
+        specified. For this reason instead of updating a div an endless
+        appending to the list occurs. For this reason I am currently loading the
+        10 tweets then after the last tweet using the server-sent delay
+        parameter to reload the page at a random time. It works but I wish I had
+        a more easily used API to use.
+
+        There is some repetion I have noticed. This could be because the call is
+        picking up retweets. I could look into how to avoid this.
+
+        I may do something like randomly update a map from Google instead.
+    </p>
+
+    <div id="#tweet-0"></div>
+
+    <div id="#tweet-1"></div>
+
+    <div id="#tweet-2"></div>
+
+    <div id="#tweet-3"></div>
+
+    <div id="#tweet-4"></div>
+
+    <div id="#tweet-5"></div>
+    
+    <div id="#tweet-6"></div>
+    
+    <div id="#tweet-7"></div>
+    
+    <div id="#tweet-8"></div>
+    
+    <div id="#tweet-9"></div>
+
+    {{ template "footer.html" . }}

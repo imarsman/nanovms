@@ -1,0 +1,23 @@
+{{ template "header.html" . }}
+
+<h2>Nats demo</h2>
+
+<p>
+    This will be a simple NATS messaging service demonstration. A search will be
+    requested from within the page and internally a request will be made from a
+    built in NATS server.
+</p>
+<p>
+    The search done is of the PLOS article library. There is supposed to be an
+    API requiring a key but as far as I can tell the API can be queried with no
+    key.
+</p>
+<p>
+    I am new to NATS but it looks great. If you look at the code I have written
+    to implement it and you are an old hand at using NATS I'm sure you will find
+    lots of problems. I hope I will find those problems as I keep working on
+    this. There are many aspects of NATS that I have not explored, such as
+    publish/subscribe, queuing, etc.
+</p>
+
+{{ template "footer.html" . }}

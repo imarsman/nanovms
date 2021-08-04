@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nanovms and ops demonstration</title>
+
+    <link rel="stylesheet" href="./css/simple.min.css">
+    <meta name="csrf-token" content="{{.CsrfToken}}">
+    <meta name="server-address" content="{{.ServerAddress}}">
+</head>
+<body>
+    {{ template "nav.html" . }}
+    <header>
+        <h1>nanovms Demo</h1>
+        <p>A demonstration of using nanovms in the cloud</p>
+    </header>

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 	cache "github.com/patrickmn/go-cache"
 	"google.golang.org/grpc"
 
@@ -153,6 +154,20 @@ func init() {
 		log.Println("Problems with regular expression:", err)
 		os.Exit(-1)
 	}
+}
+
+func natsHandler(w http.ResponseWriter, r *http.Request) {
+	// Connect to a server
+	nc, _ := nats.Connect(nats.DefaultURL)
+
+	// Requests
+	msg, err := nc.Request("help", []byte("help me"), 10*time.Millisecond)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(msg.Data)
 }
 
 func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {

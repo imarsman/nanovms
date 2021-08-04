@@ -137,7 +137,7 @@ func main() {
 	snopts.HTTPPort = 8223
 
 	// Now run the server with the streaming and streaming/nats options.
-	s, err := server.NewServer(snopts)
+	natsServer, err := server.NewServer(snopts)
 	if err != nil {
 		panic(err)
 	}
@@ -166,11 +166,12 @@ func main() {
 			}
 		}()
 		go func() {
+			fmt.Println("Starting NATS server")
 			// Start things up. Block here until done.
-			if err := server.Run(s); err != nil {
+			if err := server.Run(natsServer); err != nil {
 				server.PrintAndDie(err.Error())
 			}
-			s.WaitForShutdown()
+			natsServer.WaitForShutdown()
 		}()
 	} else {
 		go func() {
@@ -192,11 +193,13 @@ func main() {
 			fmt.Println("started grpc")
 		}()
 		go func() {
+			fmt.Println("Starting NATS server")
+
 			// Start things up. Block here until done.
-			if err := server.Run(s); err != nil {
+			if err := server.Run(natsServer); err != nil {
 				server.PrintAndDie(err.Error())
 			}
-			s.WaitForShutdown()
+			natsServer.WaitForShutdown()
 		}()
 	}
 

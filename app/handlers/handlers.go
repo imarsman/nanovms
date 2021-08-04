@@ -1,7 +1,8 @@
-package main
+package handlers
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"io/fs"
 	"log"
@@ -18,12 +19,25 @@ import (
 	cache "github.com/patrickmn/go-cache"
 	"google.golang.org/grpc"
 
+	nanovms "github.com/imarsman/nanovms/app"
 	// "github.com/imarsman/nanovms/app"
 
 	"github.com/imarsman/nanovms/app/grpcpass"
 	"github.com/imarsman/nanovms/app/msg"
 	"github.com/imarsman/nanovms/app/tweets"
 )
+
+//go:embed dynamic/*
+var dynamic embed.FS
+
+//go:embed static/*
+var static embed.FS
+
+//go:embed transactions.json
+var transactionJSON string
+
+//go:embed static/assets/IanResume_go.pdf
+var resume []byte
 
 var templates *template.Template // templates for dynamic pages
 var routeMatch *regexp.Regexp    // template route regex
@@ -157,7 +171,19 @@ func init() {
 	}
 }
 
-func natsHandler(w http.ResponseWriter, r *http.Request) {
+// ResumeHandler serve up resume
+func ResumeHandler(w http.ResponseWriter, r *http.Request) {
+	//Set header
+	w.Header().Set("Content-type", "application/pdf")
+
+	//Stream to response
+	if _, err := w.Write(resume); err != nil {
+		w.WriteHeader(500)
+	}
+}
+
+// NatsHandler NATS request handler
+func NatsHandler(w http.ResponseWriter, r *http.Request) {
 	// Connect to a server
 	nc, _ := nats.Connect(nats.DefaultURL)
 
@@ -181,7 +207,8 @@ func natsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(msg.Data)
 }
 
-func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
+// XkcdNoGRPCHandler handler for XKCD with no GRPC
+func XkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := grpcpass.FetchRandomXKCD()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -205,7 +232,8 @@ func xkcdNoGRPCHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func xkcdHandler(w http.ResponseWriter, r *http.Request) {
+// XkcdHandler handler for XKCD data
+func XkcdHandler(w http.ResponseWriter, r *http.Request) {
 	// serverAddr := "localhost:9000"
 	serverAddr := "[::1]:5222"
 
@@ -216,7 +244,7 @@ func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Connect with credentials
 	// Currently trying only to use TLS to allow GCP to permit the connection
-	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*ClientCredentials()))
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*nanovms.ClientCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -252,8 +280,8 @@ func xkcdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-// twitterHandler get an id for a tweet
-func twitterHandler(w http.ResponseWriter, r *http.Request) {
+// TwitterHandler get an id for a tweet
+func TwitterHandler(w http.ResponseWriter, r *http.Request) {
 	findTokenFromRequest(r)
 
 	td, err := tweets.GetTweetData()
@@ -274,8 +302,8 @@ func twitterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-// templatePageHandler use template collection to produce output
-func templatePageHandler(w http.ResponseWriter, r *http.Request) {
+// TemplatePageHandler use template collection to produce output
+func TemplatePageHandler(w http.ResponseWriter, r *http.Request) {
 	pd := newPageData()
 
 	token := findTokenFromRequest(r)
@@ -307,8 +335,8 @@ func templatePageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("NOT FOUND"))
 }
 
-// getTransactionsHandler get list of transactions
-func getTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+// GetTransactionsHandler get list of transactions
+func GetTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", jsonContentType)
 	transactionList, err := readTransactions()

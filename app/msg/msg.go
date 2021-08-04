@@ -11,10 +11,13 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+//go:embed static/*
+var static embed.FS
+
 // go get github.com/nats-io/nkeys/nk
 // https://github.com/nats-io/nkeys/blob/master/nk/README.md
 
-//go:embed secrets/nkuser.seed
+//go:embed secrets/nkeyuser.seed
 var nkeyUserSeed string
 
 //go:embed secrets/nkeyuser.pub

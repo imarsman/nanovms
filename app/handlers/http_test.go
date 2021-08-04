@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 // newRootServer a simple server for documents at /
 func newTemplateServer() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/", templatePageHandler).Methods("GET")
+	r.HandleFunc("/", TemplatePageHandler).Methods("GET")
 
 	return r
 }
@@ -43,7 +43,7 @@ func newCSSServer() *mux.Router {
 // newTransactionsRequestServer a simple server to handle the /transactions endpoint
 func newTransactionsRequestServer() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/transactions/", getTransactionsHandler).Methods("GET")
+	r.HandleFunc("/transactions/", GetTransactionsHandler).Methods("GET")
 
 	return r
 }

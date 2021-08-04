@@ -14,7 +14,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/imarsman/nanovms/app/grpcpass"
+	"github.com/imarsman/nanovms/app/handlers"
 	"google.golang.org/grpc"
+
+	// "github.com/imarsman/nanovms/handlers"
 
 	// "google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials"
@@ -24,9 +27,6 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-//go:embed dynamic/*
-var dynamic embed.FS
-
 //go:embed static/*
 var static embed.FS
 
@@ -35,9 +35,6 @@ var servercert []byte
 
 //go:embed secrets/serverkey.pem
 var serverkey []byte
-
-//go:embed transactions.json
-var transactionJSON string
 
 //go:embed .context
 var runContext string
@@ -84,7 +81,7 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	// Sample JSON returning function
-	router.HandleFunc("/transactions", getTransactionsHandler).Methods(http.MethodGet).Name("Sample transactions")
+	router.HandleFunc("/transactions", handlers.GetTransactionsHandler).Methods(http.MethodGet).Name("Sample transactions")
 
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(static)
@@ -107,10 +104,10 @@ func main() {
 	router.PathPrefix("/js").Handler(http.StripPrefix("/js", http.FileServer(http.FS(contentJS)))).Name("JS Files")
 
 	// For page tweets
-	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
+	router.PathPrefix("/gettweet").HandlerFunc(handlers.TwitterHandler).Methods(http.MethodGet).Name("Get tweets")
 
 	// NATS demo
-	router.PathPrefix("/msg").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
+	router.PathPrefix("/msg").HandlerFunc(handlers.NatsHandler).Methods(http.MethodGet).Name("Get NATS request")
 
 	// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
@@ -149,11 +146,11 @@ func main() {
 		go func() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
-			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
+			router.PathPrefix("/getimage").HandlerFunc(handlers.XkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
 			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get
 			// via GRPC")
 
-			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+			router.PathPrefix("/").HandlerFunc(handlers.TemplatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
 			http.ListenAndServe(":8000", router)
 
@@ -178,9 +175,9 @@ func main() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
 			// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
-			router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			router.PathPrefix("/getimage").HandlerFunc(handlers.XkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			// Default
-			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+			router.PathPrefix("/").HandlerFunc(handlers.TemplatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
 			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			http.ListenAndServe(":8000", router)

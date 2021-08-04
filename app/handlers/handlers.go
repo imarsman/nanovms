@@ -118,8 +118,8 @@ func GetRouter(inCloud bool) *mux.Router {
 
 	} else {
 		// GRPC server not currently working
-		// router.PathPrefix("/getimage").HandlerFunc(grpcpass.XkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
-		router.PathPrefix("/getimage").HandlerFunc(XkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
+		router.PathPrefix("/getimage").HandlerFunc(grpcpass.XkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
+		// router.PathPrefix("/getimage").HandlerFunc(XkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
 	}
 	router.PathPrefix("/").HandlerFunc(TemplatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 

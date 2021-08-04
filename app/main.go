@@ -44,14 +44,14 @@ func main() {
 	go func() {
 		router := handlers.GetRouter(isCloud)
 
-		grpcServer := grpcpass.GRPCServer()
-
-		natsServer := msg.NATServer()
-
 		fmt.Printf("Starting HTTP server on port %v\n", "8000")
 		if err := http.ListenAndServe(":8000", router); err != nil {
 			fmt.Printf("failed to serve: %s", err)
 		}
+	}()
+
+	go func() {
+		grpcServer := grpcpass.GRPCServer()
 
 		lis, err := net.Listen("tcp", ":5222")
 		if err != nil {
@@ -64,6 +64,10 @@ func main() {
 			// log.Fatalf("failed to serve: %s", err)
 		}
 		fmt.Println("grpc", grpcServer.GetServiceInfo())
+	}()
+
+	go func() {
+		natsServer := msg.NATServer()
 
 		fmt.Printf("Starting NATS server on %v\n", nats.DefaultPort)
 		// Start things up. Block here until done.

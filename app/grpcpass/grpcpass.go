@@ -69,6 +69,7 @@ func init() {
 	// https://github.com/grpc/grpc-go/tree/master/examples
 	// var opts []grpc.ServerOption
 	grpcServer = grpc.NewServer(grpc.Creds(*creds.TransportCredentials()))
+	// grpcServer = grpc.NewServer()
 
 	RegisterXKCDServiceServer(grpcServer, &XKCDService{})
 	fmt.Printf("grpc server: %+v\n", grpcServer.GetServiceInfo())

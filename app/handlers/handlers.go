@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"embed"
 	"encoding/json"
 	"io/fs"
@@ -18,14 +20,23 @@ import (
 	"github.com/nats-io/nats.go"
 	cache "github.com/patrickmn/go-cache"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
-	nanovms "github.com/imarsman/nanovms/app"
 	// "github.com/imarsman/nanovms/app"
 
 	"github.com/imarsman/nanovms/app/grpcpass"
 	"github.com/imarsman/nanovms/app/msg"
 	"github.com/imarsman/nanovms/app/tweets"
 )
+
+//go:embed secrets/servercert.pem
+var servercert []byte
+
+//go:embed secrets/serverkey.pem
+var serverkey []byte
+
+var transportCredentials credentials.TransportCredentials
+var clientCredentials credentials.TransportCredentials
 
 //go:embed dynamic/*
 var dynamic embed.FS
@@ -62,6 +73,39 @@ type PageData struct {
 	CsrfToken     string
 	IPAddress     string
 	ServerAddress string
+}
+
+func TransportCredentials() credentials.TransportCredentials {
+	return transportCredentials
+}
+
+func init() {
+	// Set up certificate that client and server can use
+	cert, err := tls.X509KeyPair(servercert, serverkey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Make the CertPool.
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(servercert)
+
+	clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
+
+	// Create the TLS credentials for GRPC server
+	transportCredentials = credentials.NewTLS(&tls.Config{
+		ClientAuth: tls.NoClientCert,
+		// Don't ask for a client certificate for now
+		// tls.RequireAndVerifyClientCert,
+		Certificates:       []tls.Certificate{cert},
+		ClientCAs:          pool,
+		InsecureSkipVerify: false,
+	})
+}
+
+// ClientCredentials credentials for connecting to GRPC
+func ClientCredentials() *credentials.TransportCredentials {
+	return &clientCredentials
 }
 
 // uniqueToken get a random string that can be used as a CSRF header and later to
@@ -244,7 +288,7 @@ func XkcdHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Connect with credentials
 	// Currently trying only to use TLS to allow GCP to permit the connection
-	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*nanovms.ClientCredentials()))
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(*ClientCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

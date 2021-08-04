@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"embed"
 	_ "embed"
 	"fmt"
@@ -17,11 +15,6 @@ import (
 	"github.com/imarsman/nanovms/app/handlers"
 	"google.golang.org/grpc"
 
-	// "github.com/imarsman/nanovms/handlers"
-
-	// "google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials"
-	// "github.com/imarsman/nanovms/app/grpcpass"
 	"github.com/nats-io/nats-server/v2/server"
 	stand "github.com/nats-io/nats-streaming-server/server"
 	"github.com/nats-io/nats.go"
@@ -30,45 +23,10 @@ import (
 //go:embed static/*
 var static embed.FS
 
-//go:embed secrets/servercert.pem
-var servercert []byte
-
-//go:embed secrets/serverkey.pem
-var serverkey []byte
-
 //go:embed .context
 var runContext string
 
-var transportCredentials credentials.TransportCredentials
-var clientCredentials credentials.TransportCredentials
-
-// ClientCredentials credentials for connecting to GRPC
-func ClientCredentials() *credentials.TransportCredentials {
-	return &clientCredentials
-}
-
 func init() {
-	// Set up certificate that client and server can use
-	cert, err := tls.X509KeyPair(servercert, serverkey)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Make the CertPool.
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(servercert)
-
-	clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
-
-	// Create the TLS credentials for GRPC server
-	transportCredentials = credentials.NewTLS(&tls.Config{
-		ClientAuth: tls.NoClientCert,
-		// Don't ask for a client certificate for now
-		// tls.RequireAndVerifyClientCert,
-		Certificates:       []tls.Certificate{cert},
-		ClientCAs:          pool,
-		InsecureSkipVerify: false,
-	})
 }
 
 // Main method for app. A simple router and static, struct/json producing
@@ -119,7 +77,7 @@ func main() {
 	// https://grpc.io/docs/languages/go/basics/
 	// https://github.com/grpc/grpc-go/tree/master/examples
 	// var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(grpc.Creds(transportCredentials))
+	grpcServer := grpc.NewServer(grpc.Creds(handlers.TransportCredentials()))
 
 	// Register service. Code for XKCDService implemented by code generation.
 	grpcpass.RegisterXKCDServiceServer(grpcServer, &grpcpass.XKCDService{})

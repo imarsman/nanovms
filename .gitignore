@@ -28,6 +28,7 @@ app/servercert.pem
 app/serverkey.pem
 app/msg/secrets/nkeyuser.pub
 app/msg/secrets/nkeyuser.seed
-app/secrets/servercert.pem
-app/secrets/serverkey.pem
 app/tweets/secrets/bearer_token.txt
+app/handlers/secrets/secretsserverkey.pem
+app/handlers/secrets/servercert.pem
+app/handlers/secrets/serverkey.pem

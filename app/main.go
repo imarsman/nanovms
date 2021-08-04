@@ -31,32 +31,18 @@ func init() {
 func main() {
 	infiniteWait := make(chan string)
 
-	cloud := strings.TrimSpace(runContext) == "cloud"
+	isCloud := strings.TrimSpace(runContext) == "cloud"
 
-	router := handlers.GetRouter(cloud)
-
-	// lis, err := net.Listen("tcp", ":5222")
-	// if err != nil {
-	// 	log.Fatalf("failed to listen: %v", err)
-	// }
-
-	// // https://grpc.io/docs/languages/go/basics/
-	// // https://github.com/grpc/grpc-go/tree/master/examples
-	// // var opts []grpc.ServerOption
-	// grpcServer := grpc.NewServer(grpc.Creds(handlers.TransportCredentials()))
+	router := handlers.GetRouter(isCloud)
 
 	grpcServer := grpcpass.GRPCServer()
-
-	// Register service. Code for XKCDService implemented by code generation.
-	// grpcpass.RegisterXKCDServiceServer(grpcServer, &grpcpass.XKCDService{})
-	// fmt.Printf("grpc server: %+v\n", grpcServer.GetServiceInfo())
 
 	natsServer := msg.NATServer()
 
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more
 	// effort than is currently warrrented. May revisit.
-	if cloud {
+	if isCloud {
 		fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 	} else {
 		fmt.Println("Running locally in OS. Serving transactions on port", "8000")
@@ -85,50 +71,6 @@ func main() {
 		}
 		natsServer.WaitForShutdown()
 	}()
-	// if cloud {
-	// 	go func() {
-	// 		fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
-
-	// 		http.ListenAndServe(":8000", router)
-
-	// 	}()
-	// 	go func() {
-	// 		fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
-	// 		if err := grpcServer.Serve(lis); err != nil {
-	// 			fmt.Printf("failed to serve: %s", err)
-	// 			// log.Fatalf("failed to serve: %s", err)
-	// 		}
-	// 	}()
-	// 	go func() {
-	// 		fmt.Println("Starting NATS server")
-	// 		// Start things up. Block here until done.
-	// 		if err := server.Run(natsServer); err != nil {
-	// 			server.PrintAndDie(err.Error())
-	// 		}
-	// 		natsServer.WaitForShutdown()
-	// 	}()
-	// } else {
-	// 	go func() {
-	// 		fmt.Println("Running locally in OS. Serving transactions on port", "8000")
-	// 		http.ListenAndServe(":8000", router)
-	// 	}()
-	// 	go func() {
-	// 		fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
-	// 		if err := grpcServer.Serve(lis); err != nil {
-	// 			log.Fatalf("failed to serve: %s", err)
-	// 		}
-	// 		fmt.Println("started grpc")
-	// 	}()
-	// 	go func() {
-	// 		fmt.Println("Starting NATS server")
-
-	// 		// Start things up. Block here until done.
-	// 		if err := server.Run(natsServer); err != nil {
-	// 			server.PrintAndDie(err.Error())
-	// 		}
-	// 		natsServer.WaitForShutdown()
-	// 	}()
-	// }
 
 	<-infiniteWait
 }

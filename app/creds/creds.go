@@ -17,17 +17,17 @@ var servercert []byte
 //go:embed secrets/serverkey.pem
 var serverkey []byte
 
-var transportCredentials credentials.TransportCredentials
-var clientCredentials credentials.TransportCredentials
+var transportCredentials *credentials.TransportCredentials
+var clientCredentials *credentials.TransportCredentials
 
 // TransportCredentials credentials for HTTP transport
-func TransportCredentials() credentials.TransportCredentials {
+func TransportCredentials() *credentials.TransportCredentials {
 	return transportCredentials
 }
 
 // ClientCredentials credentials for connecting to GRPC
 func ClientCredentials() *credentials.TransportCredentials {
-	return &clientCredentials
+	return clientCredentials
 }
 
 func init() {
@@ -41,16 +41,17 @@ func init() {
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM(servercert)
 
-	clientCredentials = credentials.NewClientTLSFromCert(pool, "grpc.com")
-
 	// Create the TLS credentials for GRPC server
-	transportCredentials = credentials.NewTLS(&tls.Config{
+	tc := credentials.NewTLS(&tls.Config{
 		ClientAuth: tls.NoClientCert,
 		// Don't ask for a client certificate for now
 		// tls.RequireAndVerifyClientCert,
 		Certificates:       []tls.Certificate{cert},
 		ClientCAs:          pool,
-		InsecureSkipVerify: false,
+		InsecureSkipVerify: true,
 	})
-
+	transportCredentials = &tc
+	// clientCredentials = *(&credentials.NewClientTLSFromCert(pool, "grpc.com"))
+	cc := credentials.NewClientTLSFromCert(pool, "grpc.com")
+	clientCredentials = &cc
 }

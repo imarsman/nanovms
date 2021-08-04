@@ -33,12 +33,6 @@ func main() {
 
 	isCloud := strings.TrimSpace(runContext) == "cloud"
 
-	router := handlers.GetRouter(isCloud)
-
-	grpcServer := grpcpass.GRPCServer()
-
-	natsServer := msg.NATServer()
-
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more
 	// effort than is currently warrrented. May revisit.
@@ -48,6 +42,12 @@ func main() {
 		fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 	}
 	go func() {
+		router := handlers.GetRouter(isCloud)
+
+		grpcServer := grpcpass.GRPCServer()
+
+		natsServer := msg.NATServer()
+
 		fmt.Printf("Starting HTTP server on port %v\n", "8000")
 		if err := http.ListenAndServe(":8000", router); err != nil {
 			fmt.Printf("failed to serve: %s", err)
@@ -63,6 +63,7 @@ func main() {
 			fmt.Printf("failed to serve: %s", err)
 			// log.Fatalf("failed to serve: %s", err)
 		}
+		fmt.Println("grpc", grpcServer.GetServiceInfo())
 
 		fmt.Printf("Starting NATS server on %v\n", nats.DefaultPort)
 		// Start things up. Block here until done.

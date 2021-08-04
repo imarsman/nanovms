@@ -34,7 +34,7 @@ tasks:
     cmds:
       # See https://github.com/FiloSottile/mkcert
       # Make certificate for grpc tls
-      - mkcert -key-file {{.secretspath}}/secretsserverkey.pem -cert-file {{.secretspath}}/servercert.pem grpc.com
+      - mkcert -key-file {{.secretspath}}/serverkey.pem -cert-file {{.secretspath}}/servercert.pem grpc.com
       # Use of embed to flag context - used for port use
       - echo "cloud" > .context
       - GOOS=linux go build .

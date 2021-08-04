@@ -21,6 +21,7 @@ import (
 	// "github.com/imarsman/nanovms/app"
 
 	"github.com/imarsman/nanovms/app/grpcpass"
+	"github.com/imarsman/nanovms/app/msg"
 	"github.com/imarsman/nanovms/app/tweets"
 )
 
@@ -160,8 +161,18 @@ func natsHandler(w http.ResponseWriter, r *http.Request) {
 	// Connect to a server
 	nc, _ := nats.Connect(nats.DefaultURL)
 
+	// Make new search query parameters
+	request := msg.NewQuery("plos", 0)
+
+	// Create the request payload
+	payload, err := json.MarshalIndent(request, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	// Requests
-	msg, err := nc.Request("help", []byte("help me"), 10*time.Millisecond)
+	msg, err := nc.Request("plos", []byte(payload), 10*time.Millisecond)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

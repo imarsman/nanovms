@@ -19,9 +19,52 @@ var routeMatch *regexp.Regexp    // template route regex
 
 var nc *nats.Conn
 
+// http://api.plos.org/solr/examples/
+// http://api.plos.org/search?q=title:covid
+// - &start=[]
+
+// ResultSet a list of results
+type ResultSet struct {
+	NumFound int      `json:"numFound"`
+	Start    int      `json:"start"`
+	Docs     []Result `json:"docs"`
+}
+
+// Result a query result
+type Result struct {
+	ID         int    `json:"id"`
+	Abstract   string `json:"abstract"`
+	Journal    string `json:"journal"`
+	SearchTerm string `json:"searchTerm"`
+	Message    string `json:"message"`
+	Error      bool   `json:"error"`
+}
+
+// Payload a payload to send back to browser
+type Payload struct {
+	payload string
+}
+
+// NewPayload get a new result instance
+func NewPayload() *Payload {
+	p := Payload{}
+
+	return &p
+}
+
 // Query a query
 type Query struct {
 	SearchTerm string
+	Start      int
+}
+
+// NewQuery make a new query
+func NewQuery(searchTerm string, start int) *Query {
+	q := Query{}
+	q.SearchTerm = searchTerm
+	q.Start = start
+
+	return &q
 }
 
 // https://golangrepo.com/repo/nats-io-nats-go-messaging

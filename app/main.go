@@ -109,6 +109,9 @@ func main() {
 	// For page tweets
 	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
 
+	// NATS demo
+	router.PathPrefix("/msg").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
+
 	// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
 
 	lis, err := net.Listen("tcp", ":5222")
@@ -125,8 +128,19 @@ func main() {
 	grpcpass.RegisterXKCDServiceServer(grpcServer, &grpcpass.XKCDService{})
 	fmt.Printf("grpc server: %+v\n", grpcServer.GetServiceInfo())
 
-	nopts := stand.NewNATSOptions()
-	nopts.Port = 4223
+	// https://sourcegraph.com/github.com/nats-io/nats-server@6da5d2f4907a03c8ba26fc8b6ca2aed903ac80f8/-/blob/main.go
+	// Now we want to setup the monitoring port for NATS Streaming.
+	// We still need NATS Options to do so, so create NATS Options
+	// using the NewNATSOptions() from the streaming server package.
+	snopts := stand.NewNATSOptions()
+	snopts.Port = nats.DefaultPort
+	snopts.HTTPPort = 8223
+
+	// Now run the server with the streaming and streaming/nats options.
+	s, err := server.NewServer(snopts)
+	if err != nil {
+		panic(err)
+	}
 
 	// For now just use an unprivileged port. Running locally as non-root would
 	// fail but running in the cloud should be fine, but that would take more
@@ -136,34 +150,13 @@ func main() {
 			fmt.Println("Running in cloud mode with nanovms unikernel. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
 			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get visa Non GRPC")
-			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
-			// Default
+			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get
+			// via GRPC")
+
 			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
+
 			http.ListenAndServe(":8000", router)
-			// Get NATS Streaming Server default options
-			// opts := stand.GetDefaultOptions()
 
-			// // Point to the NATS Server with host/port used above
-			// opts.NATSServerURL = "nats://localhost:4223"
-
-			// https://sourcegraph.com/github.com/nats-io/nats-server@6da5d2f4907a03c8ba26fc8b6ca2aed903ac80f8/-/blob/main.go
-			// Now we want to setup the monitoring port for NATS Streaming.
-			// We still need NATS Options to do so, so create NATS Options
-			// using the NewNATSOptions() from the streaming server package.
-			snopts := stand.NewNATSOptions()
-			snopts.Port = nats.DefaultPort
-			snopts.HTTPPort = 8223
-
-			// Now run the server with the streaming and streaming/nats options.
-			s, err := server.NewServer(snopts)
-			if err != nil {
-				panic(err)
-			}
-			// Start things up. Block here until done.
-			if err := server.Run(s); err != nil {
-				server.PrintAndDie(err.Error())
-			}
-			s.WaitForShutdown()
 		}()
 		go func() {
 			fmt.Printf("Starting GRPC server on port %v\n", lis.Addr().String())
@@ -172,12 +165,19 @@ func main() {
 				// log.Fatalf("failed to serve: %s", err)
 			}
 		}()
+		go func() {
+			// Start things up. Block here until done.
+			if err := server.Run(s); err != nil {
+				server.PrintAndDie(err.Error())
+			}
+			s.WaitForShutdown()
+		}()
 	} else {
 		go func() {
 			fmt.Println("Running locally in OS. Serving transactions on port", "8000")
 			// For GRPC test using XKCD fetches
-			router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
-			// router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			// router.PathPrefix("/getimage").HandlerFunc(xkcdNoGRPCHandler).Methods(http.MethodGet).Name("Get via GRPC")
+			router.PathPrefix("/getimage").HandlerFunc(xkcdHandler).Methods(http.MethodGet).Name("Get via GRPC")
 			// Default
 			router.PathPrefix("/").HandlerFunc(templatePageHandler).Methods(http.MethodGet).Name("Dynamic pages")
 
@@ -190,6 +190,13 @@ func main() {
 				log.Fatalf("failed to serve: %s", err)
 			}
 			fmt.Println("started grpc")
+		}()
+		go func() {
+			// Start things up. Block here until done.
+			if err := server.Run(s); err != nil {
+				server.PrintAndDie(err.Error())
+			}
+			s.WaitForShutdown()
 		}()
 	}
 

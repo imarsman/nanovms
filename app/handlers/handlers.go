@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"sync/atomic"
 	"text/template"
 	"time"
@@ -229,8 +230,19 @@ func natsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var start int
+	startStr := r.URL.Query().Get("start")
+	if startStr != "" {
+		var err error
+		start, err = strconv.Atoi(startStr)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
 	var result []byte
-	result, err := msg.QueryNATS(search, inCloud)
+	result, err := msg.QueryNATS(search, start, inCloud)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

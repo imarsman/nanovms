@@ -8,10 +8,18 @@
         <col span="1" style="width: 25%;">
         <col span="1" style="width: 75%;">
     </colgroup>
-{{- range .Docs}}
+    {{- $start := .Start }}
+    <tr><td colspan="2"><a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
+    onMouseOut="this.style.backgroundColor='white'"
+    onclick="searchForMessages({{.Next}})">Next >>></a></td></tr>
+{{- range $i, $a := .Docs}}
     <tr style="background-color: #AEB6BF">
         <td style="vertical-align: top;"><strong>Title</strong></td>
         <td>{{.Title}}</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top;">Number</td>
+        <td>{{ Add $i $start }}</td>
     </tr>
     <tr>
         <td style="vertical-align: top;">ID</td>

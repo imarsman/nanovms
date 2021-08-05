@@ -38,7 +38,7 @@ func TestCall(t *testing.T) {
 	is := is.New(t)
 	is.True(true == true)
 
-	_, err := queryAPI("Covid")
+	_, err := queryAPI("Covid", 0)
 	is.NoErr(err)
 
 	// t.Log(string(results))
@@ -64,7 +64,7 @@ func TestMessage(t *testing.T) {
 	t.Log("address", server.Addr())
 	defer shutdown()
 
-	result, err := QueryNATS("Covid", false)
+	result, err := QueryNATS("Covid", 0, false)
 	is.NoErr(err)
 
 	t.Logf("Got message %+v", string(result))
@@ -78,7 +78,7 @@ func TestToHTML(t *testing.T) {
 	t.Log("address", server.Addr())
 	defer shutdown()
 
-	result, err := QueryNATS("Covid", false)
+	result, err := QueryNATS("Covid", 0, false)
 	is.NoErr(err)
 
 	// t.Log("Query results", string(result))

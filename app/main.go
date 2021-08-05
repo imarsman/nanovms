@@ -56,7 +56,7 @@ func main() {
 
 	// GRPC
 	go func() {
-		if !inCloud {
+		if inCloud == false {
 			lis, err := net.Listen("tcp", ":5222")
 			if err != nil {
 				log.Fatalf("failed to listen: %v", err)
@@ -67,6 +67,7 @@ func main() {
 				fmt.Printf("failed to serve: %s", err)
 				// log.Fatalf("failed to serve: %s", err)
 			}
+
 			fmt.Println("grpc", grpcServer.GetServiceInfo())
 		}
 	}()
@@ -82,6 +83,7 @@ func main() {
 			if err := server.Run(ns); err != nil {
 				server.PrintAndDie(err.Error())
 			}
+
 			ns.WaitForShutdown()
 		}
 	}()

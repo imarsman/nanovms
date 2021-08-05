@@ -25,17 +25,17 @@ window.onload = function () {
         });
 };
 
-function searchForMessages() {
-    loadSearch()
+function searchForMessages(next) {
+    loadSearch(next)
 }
 
-function loadSearch() {
+function loadSearch(next) {
     let token = getMeta(csrfTokenMeta)
     var xmlhttp = new XMLHttpRequest();
 
     let e = document.getElementById("#searchtext");
     let value = e.value
-    var url = "/msgsearch?search=" + encodeURIComponent(value)
+    var url = "/msgsearch?search=" + encodeURIComponent(value) + "&start=" + next
     // alert("url " + url)
 
     xmlhttp.onreadystatechange = function () {

@@ -52,6 +52,7 @@ var natsServer *server.Server
 // http://api.plos.org/search?q=title:covid
 // - &start=[]
 
+// Response corresponds to JSON fetched
 type Response struct {
 	ResultSet ResultSet `json:"response"`
 }
@@ -61,6 +62,7 @@ type ResultSet struct {
 	SearchTerm   string   `json:"searchTerm"`
 	NumFound     int      `json:"numFound"`
 	Start        int      `json:"start"`
+	Next         int      `json:"next"`
 	Docs         []Result `json:"docs"`
 	Error        bool     `json:"error"`
 	ErrorMessage string   `json:"errormsg"`
@@ -93,14 +95,14 @@ func NewPayload() *Payload {
 // Query a query
 type Query struct {
 	SearchTerm string
-	Start      int
+	Next       int
 }
 
 // NewQuery make a new query
-func NewQuery(searchTerm string, start int) *Query {
+func NewQuery(searchTerm string, next int) *Query {
 	q := Query{}
 	q.SearchTerm = searchTerm
-	q.Start = start
+	q.Next = next
 
 	return &q
 }
@@ -111,7 +113,11 @@ func NATServer() *server.Server {
 }
 
 var funcMap = template.FuncMap{
-	"StringsJoin": strings.Join, "StringsTrim": strings.TrimSpace,
+	"StringsJoin": strings.Join,
+	"StringsTrim": strings.TrimSpace,
+	"Add": func(a, b int) int {
+		return a + b
+	},
 }
 
 // https://golangrepo.com/repo/nats-io-nats-go-messaging
@@ -185,7 +191,7 @@ func getConnection(isInCloud bool) (*nats.Conn, error) {
 }
 
 // QueryNATS query a demo remote nats server
-func QueryNATS(search string, isInCloud bool) ([]byte, error) {
+func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 	nc, err := getConnection(isInCloud)
 
 	ec, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
@@ -203,10 +209,11 @@ func QueryNATS(search string, isInCloud bool) ([]byte, error) {
 		return getError(search, err.Error()), nil
 	}
 
-	rs, err := fetchSearch(search)
+	rs, err := fetchSearch(search, next)
 	if err != nil {
 		return getError(search, err.Error()), nil
 	}
+	rs.Next = rs.Start + len(rs.Docs)
 
 	if len(rs.Docs) == 0 {
 		return getError(search, "Nothing found for search \""+search+"\""), nil
@@ -223,8 +230,8 @@ func QueryNATS(search string, isInCloud bool) ([]byte, error) {
 	return msg.Data, nil
 }
 
-func fetchSearch(search string) (*ResultSet, error) {
-	results, err := queryAPI(search)
+func fetchSearch(search string, next int) (*ResultSet, error) {
+	results, err := queryAPI(search, next)
 	if err != nil {
 		return &ResultSet{}, err
 	}
@@ -242,12 +249,13 @@ func fetchSearch(search string) (*ResultSet, error) {
 	}
 
 	response.ResultSet.SearchTerm = search
+	response.ResultSet.Next = response.ResultSet.Start + len(response.ResultSet.Docs)
 
 	return &response.ResultSet, nil
 }
 
-func queryAPI(search string) ([]byte, error) {
-	url := "http://api.plos.org/search?q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author"
+func queryAPI(search string, start int) ([]byte, error) {
+	url := "http://api.plos.org/search?q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -261,20 +269,6 @@ func queryAPI(search string) ([]byte, error) {
 
 	return bytes, nil
 }
-
-// // ToResultSet get result set from payload
-// func ToResultSet(payload []byte) (ResultSet, error) {
-// 	response := Response{}
-
-// 	err := json.Unmarshal(payload, &response)
-// 	if err != nil {
-// 		return ResultSet{}, err
-// 	}
-
-// 	rs := response.ResultSet
-// 	// fmt.Printf("RESULTSET %+v\n", response.ResultSet)
-// 	return rs, nil
-// }
 
 // ToHTML process template to HTML
 func ToHTML(rs *ResultSet, isErr bool) (string, error) {

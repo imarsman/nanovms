@@ -46,6 +46,7 @@ func main() {
 		fmt.Println("Running locally in OS. Serving html on port", "8000")
 	}
 	go func() {
+		// Get the router with a flag for whether or not app is runnin in cloud
 		httpRouter := handlers.GetRouter(inCloud)
 
 		fmt.Printf("Starting HTTP server on port %v\n", "8000")
@@ -56,6 +57,7 @@ func main() {
 
 	// GRPC
 	go func() {
+		// Problems running in cloud for now
 		if inCloud == false {
 			lis, err := net.Listen("tcp", ":5222")
 			if err != nil {
@@ -74,6 +76,7 @@ func main() {
 
 	// NAT
 	go func() {
+		// Problems running in cloud for now
 		if inCloud == false {
 			// Skipping for now
 			ns := msg.NATServer()

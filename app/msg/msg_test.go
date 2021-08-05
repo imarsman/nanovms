@@ -24,10 +24,6 @@ func NewNATSServer(t *testing.T) (*server.Server, func()) {
 	if err != nil {
 		panic(err)
 	}
-	// go func() {
-	// 	natsServer.Start()
-	// 	natsServer.WaitForShutdown()
-	// }()
 
 	return natsServer, func() {
 		natsServer.Shutdown()
@@ -43,18 +39,6 @@ func TestCall(t *testing.T) {
 
 	// t.Log(string(results))
 }
-
-// func TestGetStruct(t *testing.T) {
-// 	is := is.New(t)
-
-// 	payload, err := queryAPI("Covid")
-// 	is.NoErr(err)
-
-// 	_, err = ToResultSet(payload)
-// 	is.NoErr(err)
-
-// 	// t.Logf("%+v", rs)
-// }
 
 func TestMessage(t *testing.T) {
 	is := is.New(t)

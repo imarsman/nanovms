@@ -131,7 +131,7 @@ func Unescape(input string) string {
 	return input
 }
 
-// https://golangrepo.com/repo/nats-io-nats-go-messaging
+// Set up templates and the server
 func init() {
 	// We need to convert the embed FS to an io.FS in order to work with it
 	fsys := fs.FS(dynamic)
@@ -145,9 +145,7 @@ func init() {
 		log.Println("Cannot parse templates:", err)
 		os.Exit(-1)
 	}
-	// templates.Funcs(template.FuncMap{"StringsJoin": strings.Join})
-
-	// templates = templates.Funcs(template.FuncMap{"StringsJoin": strings.Join})
+	// https://golangrepo.com/repo/nats-io-nats-go-messaging
 
 	// templates.Funcs(template.FuncMap{"StringsJoin": strings.Join})
 	// Set up our route matching pattern
@@ -172,6 +170,7 @@ func init() {
 	}
 }
 
+// getError simple error output
 func getError(search string, errMsg string) []byte {
 	rs := ResultSet{}
 	rs.SearchTerm = search
@@ -186,6 +185,7 @@ func getError(search string, errMsg string) []byte {
 	return output
 }
 
+// Get a local connection or one to a demo for nats.io
 func getConnection(isInCloud bool) (*nats.Conn, error) {
 	if isInCloud {
 		nc, err := nats.Connect("nats://demo.nats.io:4222", nats.Timeout(10*time.Second))
@@ -202,12 +202,15 @@ func getConnection(isInCloud bool) (*nats.Conn, error) {
 	return nc, nil
 }
 
-// QueryNATS query a demo remote nats server
+// QueryNATS query a nats server
 func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
+	// Get a connection
 	nc, err := getConnection(isInCloud)
 
+	// Get escaped query
 	search = url.QueryEscape(search)
 
+	// To make things easier set up a JSON encoded connection
 	ec, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		log.Fatal(err)
@@ -217,12 +220,13 @@ func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 	// Create a unique subject name for replies.
 	uniqueReplyTo := nats.NewInbox()
 
-	// Subscribe
+	// Subscribe to a unique subject
 	sub, err := nc.SubscribeSync(uniqueReplyTo)
 	if err != nil {
 		return getError(search, err.Error()), nil
 	}
 
+	// Get the data to publish
 	rs, err := fetchSearch(search, next)
 	if err != nil {
 		return getError(search, err.Error()), nil
@@ -233,9 +237,10 @@ func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 		return getError(search, "Nothing found for search \""+search+"\""), nil
 	}
 
+	// Publish the resulting object, which will be turned into JSON
 	ec.Publish(uniqueReplyTo, rs)
 
-	// Wait for a message
+	// Wait for a message - blocking
 	msg, err := sub.NextMsg(5 * time.Second)
 	if err != nil {
 		return getError(search, err.Error()), nil
@@ -249,11 +254,6 @@ func fetchSearch(search string, next int) (*ResultSet, error) {
 	if err != nil {
 		return &ResultSet{}, err
 	}
-
-	// resultSet, err := ToResultSet(results)
-	// if err != nil {
-	// 	return &ResultSet{}, err
-	// }
 
 	response := Response{}
 

@@ -27,8 +27,9 @@ intermittently be unavailable if I am doing work on the code and redeploying.
 - creating instance from image
 - accessing unikernal instance via http://theip/transactions
 - Twitter API usage demo
-- GRPC demo involved in getting xkcd images for a page
+- GRPC demo getting set of xkcd comics that reload randomly
   - Currently issues tied to HTTP2 on GCP
+- nats.io messaging test - like grpc it is overkill but useful to learn with
 
 ## What does not work
 

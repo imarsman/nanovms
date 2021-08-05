@@ -1,6 +1,6 @@
 <h2>Search results for "{{.SearchTerm}}"</h2>
-{{- if eq (len .Docs) 0 }}
-    <p>Nothing found</p>
+{{- if .Error }}
+    <p>{{ .ErrorMessage }}</p>
 {{- end }}
 {{- if gt (len .Docs) 0 }}
 <table>

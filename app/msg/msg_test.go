@@ -64,7 +64,7 @@ func TestMessage(t *testing.T) {
 	t.Log("address", server.Addr())
 	defer shutdown()
 
-	result, err := QueryNATS("Covid")
+	result, err := QueryNATS("Covid", false)
 	is.NoErr(err)
 
 	t.Logf("Got message %+v", string(result))
@@ -78,7 +78,7 @@ func TestToHTML(t *testing.T) {
 	t.Log("address", server.Addr())
 	defer shutdown()
 
-	result, err := QueryNATS("Covid")
+	result, err := QueryNATS("Covid", false)
 	is.NoErr(err)
 
 	// t.Log("Query results", string(result))

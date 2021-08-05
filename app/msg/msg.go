@@ -58,10 +58,12 @@ type Response struct {
 
 // ResultSet a list of results
 type ResultSet struct {
-	SearchTerm string   `json:"searchTerm"`
-	NumFound   int      `json:"numFound"`
-	Start      int      `json:"start"`
-	Docs       []Result `json:"docs"`
+	SearchTerm   string   `json:"searchTerm"`
+	NumFound     int      `json:"numFound"`
+	Start        int      `json:"start"`
+	Docs         []Result `json:"docs"`
+	Error        bool     `json:"error"`
+	ErrorMessage string   `json:"errormsg"`
 }
 
 // Result a query result
@@ -74,7 +76,6 @@ type Result struct {
 	SearchTerm      string   `json:"searchTerm"`
 	Message         string   `json:"message"`
 	PublicationDate string   `json:"publication_date"`
-	Error           bool     `json:"error"`
 }
 
 // Payload a payload to send back to browser
@@ -154,34 +155,69 @@ func init() {
 	}
 }
 
-func QueryNATS(search string) ([]byte, error) {
-	natsConn, err := nats.Connect(nats.DefaultURL)
+func getError(search string, errMsg string) []byte {
+	rs := ResultSet{}
+	rs.SearchTerm = search
+	rs.Error = true
+	rs.ErrorMessage = errMsg
+
+	output, err := json.MarshalIndent(&rs, "", "  ")
+	if err != nil {
+		fmt.Println("Got error creating error", err)
+	}
+
+	return output
+}
+
+func getConnection(isInCloud bool) (*nats.Conn, error) {
+	if isInCloud {
+		nc, err := nats.Connect("nats://demo.nats.io:4222", nats.Timeout(10*time.Second))
+		if err != nil {
+			return nil, err
+		}
+		return nc, nil
+	}
+	nc, err := nats.Connect("nats://demo.nats.io:4222", nats.Timeout(10*time.Second))
+	if err != nil {
+		return nil, err
+	}
+	return nc, nil
+}
+
+// QueryNATS query a demo remote nats server
+func QueryNATS(search string, isInCloud bool) ([]byte, error) {
+	nc, err := getConnection(isInCloud)
+
+	ec, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer ec.Close()
+
+	// Create a unique subject name for replies.
+	uniqueReplyTo := nats.NewInbox()
 
 	// Subscribe
-	sub, err := natsConn.SubscribeSync("search")
+	sub, err := nc.SubscribeSync(uniqueReplyTo)
 	if err != nil {
-		log.Fatal(err)
+		return getError(search, err.Error()), nil
 	}
 
 	rs, err := fetchSearch(search)
 	if err != nil {
-		return nil, err
+		return getError(search, err.Error()), nil
 	}
 
-	json, err := json.MarshalIndent(rs, "", "  ")
-	if err != nil {
-		return nil, err
+	if len(rs.Docs) == 0 {
+		return getError(search, "Nothing found for search \""+search+"\""), nil
 	}
 
-	natsConn.Publish("search", json)
+	ec.Publish(uniqueReplyTo, rs)
 
 	// Wait for a message
 	msg, err := sub.NextMsg(5 * time.Second)
 	if err != nil {
-		log.Fatal(err)
+		return getError(search, err.Error()), nil
 	}
 
 	return msg.Data, nil

@@ -3,7 +3,6 @@ package handlers
 import (
 	"embed"
 	"encoding/json"
-	"fmt"
 	"io/fs"
 	"log"
 	"net"
@@ -63,6 +62,11 @@ type PageData struct {
 }
 
 var router *mux.Router
+var inCloud bool
+
+func SetInCloud(isInCloud bool) {
+	inCloud = isInCloud
+}
 
 // GetRouter get reference to HTTP router
 func GetRouter(inCloud bool) *mux.Router {
@@ -87,9 +91,6 @@ func GetRouter(inCloud bool) *mux.Router {
 
 	// For page tweets
 	router.PathPrefix("/gettweet").HandlerFunc(twitterHandler).Methods(http.MethodGet).Name("Get tweets")
-
-	// // For page tweets
-	// router.PathPrefix("/resume").HandlerFunc(ResumeHandler).Methods(http.MethodGet).Name("Get resume")
 
 	// NATS demo
 	router.PathPrefix("/msgsearch").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
@@ -228,15 +229,32 @@ func natsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := msg.QueryNATS(search)
+	var result []byte
+	result, err := msg.QueryNATS(search, inCloud)
 	if err != nil {
-		fmt.Println("err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	// if inCloud {
+	// 	var err error
+	// 	result, err = msg.QueryRemoteNATS(search)
+	// 	if err != nil {
+	// 		fmt.Println("err", err)
+	// 		w.WriteHeader(http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// } else {
+	// 	var err error
+	// 	result, err = msg.QueryNATS(search)
+	// 	if err != nil {
+	// 		fmt.Println("err", err)
+	// 		w.WriteHeader(http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// }
+
 	response := msg.ResultSet{}
-	// response := msg.Response{}
 
 	err = json.Unmarshal(result, &response)
 	if err != nil {

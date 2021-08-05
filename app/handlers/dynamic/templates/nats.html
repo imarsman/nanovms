@@ -4,11 +4,14 @@
 
 <p>
     This is a simple <a href="https://nats.io">NATS</a> messaging service
-    demonstration. A search is initiated from within the page and internally a
-    request is made to a handler that calls a built in NATS server which calls
-    an HTTP client that calls an API function. The client's returned JSON is
-    parsed and then that is used to populate a structure which is used by a
-    template to produce an HTML snippet.
+    demonstration. Due to some issues with the Nanos deployment tied to port
+    access for an embedded server when running in the cloud a call to the demo
+    NATS service is made. When running locally a local NATS server is used. A
+    search is initiated from within the page and internally a request is made to
+    a handler that calls a built in NATS server which calls an HTTP client that
+    calls an API function. The client's returned JSON is parsed and then that is
+    used to populate a structure which is used by a template to produce an HTML
+    snippet.
 </p>
 <p>
     The search done is of the PLOS article library. There is supposed to be an

@@ -62,7 +62,7 @@ tasks:
     dir: ./build
     cmds:
       - task: build
-      - ops run -p {{.localport}} ./{{.applinux}}
+      - ops run -p "{{.localport}},4222" ./{{.applinux}}
   list-images:
     desc: list images
     cmds:

@@ -88,5 +88,14 @@
                 through a NATS call.
         </li>
         </ul>
+        <li>2021-08-05 - Removing NATS support as with nanos there are client
+        connection issues with the local server (probably also GRPC has these issues).</li>
+        <ul>
+            <li>
+                Worked around running in cloud by using the handy NATS demo
+                server and using a local one when running locally (i.e. not with
+                OPS).
+            </li>
+        </ul>
     </ul>
 {{ template "footer.html" . }}

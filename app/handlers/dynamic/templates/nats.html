@@ -1,4 +1,4 @@
-{{ template "header.html" . }}
+{{ template "header-msg.html" . }}
 
 <h2>Nats demo</h2>
 
@@ -19,5 +19,15 @@
     this. There are many aspects of NATS that I have not explored, such as
     publish/subscribe, queuing, etc.
 </p>
+
+<!-- <form id="#searchform" action="" method="GET"> -->
+    <div>
+    <input type="text" id="#searchtext"/>
+    <button type="button" id="#searchbutton" onclick="searchForMessages()"
+    style="width: 100px">Search</button>
+    </div>
+<!-- </form> -->
+
+<p id="#articles"></p>
 
 {{ template "footer.html" . }}

@@ -83,11 +83,11 @@ func TestToHTML(t *testing.T) {
 
 	// t.Log("Query results", string(result))
 
-	results := ResultSet{}
-	err = json.Unmarshal(result, &results)
+	resultSet := ResultSet{}
+	err = json.Unmarshal(result, &resultSet)
 	is.NoErr(err)
 
-	html, err := ToHTML(&results, false)
+	html, err := ToHTML(&resultSet, false)
 
 	t.Log(html)
 }

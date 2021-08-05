@@ -3,6 +3,7 @@ package handlers
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log"
 	"net"
@@ -91,7 +92,7 @@ func GetRouter(inCloud bool) *mux.Router {
 	// router.PathPrefix("/resume").HandlerFunc(ResumeHandler).Methods(http.MethodGet).Name("Get resume")
 
 	// NATS demo
-	router.PathPrefix("/msg").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
+	router.PathPrefix("/msgsearch").HandlerFunc(natsHandler).Methods(http.MethodGet).Name("Get NATS request")
 
 	if inCloud {
 		// For GRPC test using XKCD fetches
@@ -221,42 +222,40 @@ func init() {
 
 // natsHandler NATS request handler
 func natsHandler(w http.ResponseWriter, r *http.Request) {
-	search := r.Header.Get("search")
+	search := r.URL.Query().Get("search")
 	if search == "" {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	result, err := msg.QueryNATS(search)
-	if err == nil {
+	if err != nil {
+		fmt.Println("err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	response := msg.Response{}
+	response := msg.ResultSet{}
+	// response := msg.Response{}
 
 	err = json.Unmarshal(result, &response)
+	if err != nil {
+		// fmt.Println("unmarshal err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	// rs, err := msg.ToResultSet(result)
-	// if err == nil {
-	// 	output, err := msg.ToHTML(&rs, true)
-	// 	if err == nil {
-	// 		w.WriteHeader(http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// 	w.WriteHeader(http.StatusOK)
-	// 	w.Write([]byte(output))
-	// 	return
-	// }
-
-	output, err := msg.ToHTML(&response.ResultSet, false)
-	if err == nil {
+	output, err := msg.ToHTML(&response, false)
+	if err != nil {
+		// fmt.Println("To HTML err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Add("Content-Type", htmlContentType)
 	w.WriteHeader(http.StatusOK)
+
+	// fmt.Println("length", len(output))
 
 	w.Write([]byte(output))
 }

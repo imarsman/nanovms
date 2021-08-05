@@ -3,11 +3,12 @@
 <h2>Nats demo</h2>
 
 <p>
-    This is a simple NATS messaging service demonstration. A search is initiated
-    from within the page and internally a request is made to a handler that
-    calls a built in NATS server which calls an HTTP client that calls an API
-    function. The client's returned JSON is parsed and then that is used to
-    populate a structure which is used by a template to produce an HTML snippet.
+    This is a simple <a href="https://nats.io">NATS</a> messaging service
+    demonstration. A search is initiated from within the page and internally a
+    request is made to a handler that calls a built in NATS server which calls
+    an HTTP client that calls an API function. The client's returned JSON is
+    parsed and then that is used to populate a structure which is used by a
+    template to produce an HTML snippet.
 </p>
 <p>
     The search done is of the PLOS article library. There is supposed to be an
@@ -22,13 +23,11 @@
     publish/subscribe, queuing, authentication, clustering, etc.
 </p>
 
-<!-- <form id="#searchform" action="" method="GET"> -->
     <div>
     <input type="text" id="#searchtext"/>
     <button type="button" id="#searchbutton" onclick="searchForMessages()"
     style="width: 100px">Search</button>
     </div>
-<!-- </form> -->
 
 <p id="#articles"></p>
 

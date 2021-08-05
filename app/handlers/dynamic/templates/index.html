@@ -80,5 +80,13 @@
         after adding functionality I started splitting things into packages.
         This required more work to avoid cyclic errors and to generally clean
         things up. GRPC works again locally. I will work on NATS next.</li>
+        <ul>
+            <li>
+                Got NATS test working locally. Will have to see if it fails on
+                GCP for some networking reason. If so I will have to do a
+                workaround and just call the function directly instead of going
+                through a NATS call.
+        </li>
+        </ul>
     </ul>
 {{ template "footer.html" . }}

@@ -1,4 +1,4 @@
-<h2>Search results for "{{.SearchTerm}}"</h2>
+<h2>Search results for "{{ Unescape .SearchTerm}}"</h2>
 {{- if .Error }}
     <p>{{ .ErrorMessage }}</p>
 {{- end }}

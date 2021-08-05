@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -118,6 +119,16 @@ var funcMap = template.FuncMap{
 	"Add": func(a, b int) int {
 		return a + b
 	},
+	"Unescape": Unescape,
+}
+
+// Unescape unescape url encoded string - for template use
+func Unescape(input string) string {
+	input, err := url.QueryUnescape(input)
+	if err != nil {
+		return ""
+	}
+	return input
 }
 
 // https://golangrepo.com/repo/nats-io-nats-go-messaging
@@ -194,6 +205,8 @@ func getConnection(isInCloud bool) (*nats.Conn, error) {
 // QueryNATS query a demo remote nats server
 func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 	nc, err := getConnection(isInCloud)
+
+	search = url.QueryEscape(search)
 
 	ec, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {

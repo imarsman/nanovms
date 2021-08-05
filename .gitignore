@@ -35,3 +35,4 @@ app/handlers/secrets/serverkey.pem
 app/creds/secrets/secretsserverkey.pem
 app/creds/secrets/servercert.pem
 app/creds/secrets/serverkey.pem
+app/msg/secrets/nkuser.seed

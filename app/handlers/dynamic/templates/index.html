@@ -94,7 +94,11 @@
             <li>
                 Worked around running in cloud by using the handy NATS demo
                 server and using a local one when running locally (i.e. not with
-                OPS).
+                OPS). Otherwise the journal search works well and pages.
+            </li>
+            <li>
+                It turns out my use of 127.0.0.1 to connect should have been
+                0.0.0.0. This may fix the problem I've been having running in GCP.
             </li>
         </ul>
     </ul>

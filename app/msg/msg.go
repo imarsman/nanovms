@@ -183,7 +183,8 @@ func getConnection(isInCloud bool) (*nats.Conn, error) {
 		}
 		return nc, nil
 	}
-	nc, err := nats.Connect("nats://demo.nats.io:4222", nats.Timeout(10*time.Second))
+	// "nats://0.0.0.0:4222"
+	nc, err := nats.Connect("nats://0.0.0.0:4222", nats.Timeout(10*time.Second))
 	if err != nil {
 		return nil, err
 	}

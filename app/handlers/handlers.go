@@ -15,7 +15,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/nats-io/nats.go"
 	cache "github.com/patrickmn/go-cache"
 
 	// "github.com/imarsman/nanovms/app"
@@ -220,43 +219,46 @@ func init() {
 	}
 }
 
-// // ResumeHandler serve up resume
-// func ResumeHandler(w http.ResponseWriter, r *http.Request) {
-// 	//Set header
-// 	w.Header().Set("Content-type", "application/pdf")
-
-// 	t := http.DetectContentType([]byte(resume))
-// 	fmt.Println(t)
-
-// 	//Stream to response
-// 	if _, err := w.Write(resume); err != nil {
-// 		w.WriteHeader(500)
-// 	}
-// }
-
 // natsHandler NATS request handler
 func natsHandler(w http.ResponseWriter, r *http.Request) {
-	// Connect to a server
-	nc, _ := nats.Connect(nats.DefaultURL)
-
-	// Make new search query parameters
-	request := msg.NewQuery("plos", 0)
-
-	// Create the request payload
-	payload, err := json.MarshalIndent(request, "", "  ")
-	if err != nil {
+	search := r.Header.Get("search")
+	if search == "" {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Requests
-	msg, err := nc.Request("plos", []byte(payload), 10*time.Millisecond)
-	if err != nil {
+	result, err := msg.QueryNATS(search)
+	if err == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Write(msg.Data)
+	response := msg.Response{}
+
+	err = json.Unmarshal(result, &response)
+
+	// rs, err := msg.ToResultSet(result)
+	// if err == nil {
+	// 	output, err := msg.ToHTML(&rs, true)
+	// 	if err == nil {
+	// 		w.WriteHeader(http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// 	w.WriteHeader(http.StatusOK)
+	// 	w.Write([]byte(output))
+	// 	return
+	// }
+
+	output, err := msg.ToHTML(&response.ResultSet, false)
+	if err == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", htmlContentType)
+	w.WriteHeader(http.StatusOK)
+
+	w.Write([]byte(output))
 }
 
 // xkcdNoGRPCHandler handler for XKCD with no GRPC

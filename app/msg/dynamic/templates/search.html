@@ -1,1 +1,30 @@
-<h2>Search results for {{.SearchTerm}}</h2>
+<h2>Search results for "{{.SearchTerm}}"</h2>
+<table>
+{{- range .Docs}}
+    <tr>
+        <td>Title</td>
+        <td>{{.Title}}</td>
+    </tr>
+    <tr>
+        <td>ID</td>
+        <td>{{.ID}}</td>
+    </tr>
+    <tr>
+        <td>Journal</td>
+        <td>{{.Journal}}</td>
+    </tr>
+    <tr>
+        <td>Publication Date</td>
+        <td>{{.PublicationDate}}</td>
+    </tr>
+    <tr>
+        <td>Abstract</td>
+        <td>{{index .Abstract 0}}</td>
+    </tr>
+    <tr>
+        {{- $authorList := StringsJoin .Author ", " }}
+        <td>Authors</td>
+        <td>{{ StringsTrim $authorList }}</td>
+    </tr>
+{{- end}}
+</table>

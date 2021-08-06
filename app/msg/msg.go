@@ -119,16 +119,16 @@ var funcMap = template.FuncMap{
 	"Add": func(a, b int) int {
 		return a + b
 	},
-	"Unescape": Unescape,
-}
-
-// Unescape unescape url encoded string - for template use
-func Unescape(input string) string {
-	input, err := url.QueryUnescape(input)
-	if err != nil {
-		return ""
-	}
-	return input
+	"Sub": func(a, b int) int {
+		return a - b
+	},
+	"Unescape": func(a string) string {
+		a, err := url.QueryUnescape(a)
+		if err != nil {
+			return ""
+		}
+		return a
+	},
 }
 
 // Set up templates and the server
@@ -268,6 +268,7 @@ func fetchSearch(search string, next int) (*ResultSet, error) {
 	return &response.ResultSet, nil
 }
 
+// queryAPI query the PLOS JSON api
 func queryAPI(search string, start int) ([]byte, error) {
 	url := "http://api.plos.org/search?q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
 

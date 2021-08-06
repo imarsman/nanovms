@@ -1,4 +1,8 @@
-<h2>Search results for "{{ Unescape .SearchTerm}}"</h2>
+{{- $len := len .Docs }}
+{{- $end := Sub .Next 1 }}
+
+<h3>Search results for "{{ Unescape .SearchTerm}}"</h3>
+<h3>{{- .Start }} to {{- $end }} of {{ .NumFound }} shown</h3>
 {{- if .Error }}
     <p>{{ .ErrorMessage }}</p>
 {{- end }}
@@ -9,9 +13,16 @@
         <col span="1" style="width: 75%;">
     </colgroup>
     {{- $start := .Start }}
-    <tr><td colspan="2"><a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
+    <tr><td colspan="2">
+    {{- if (gt .NumFound $end) }}        
+        <a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
     onMouseOut="this.style.backgroundColor='white'"
-    onclick="searchForMessages({{.Next}})">Next >>></a></td></tr>
+    onclick="searchForMessages({{.Next}})">Next >>></a>
+    {{- end }}
+    {{- if (eq .NumFound $end) }}
+        <strong>End of results</strong>
+    {{- end }}
+</td></tr>
 {{- range $i, $a := .Docs}}
     <tr style="background-color: #AEB6BF">
         <td style="vertical-align: top;"><strong>Title</strong></td>

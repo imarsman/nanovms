@@ -24,9 +24,8 @@
     {{- end }}
 </td></tr>
 {{- range $i, $a := .Docs}}
-    <tr style="background-color: #AEB6BF">
-        <td style="vertical-align: top;"><strong>Title</strong></td>
-        <td>{{.Title}}</td>
+    <tr style="background-color: #AEB6BF; border: 2px solid black;">
+        <td colspan="2" style="vertical-align: top;"><strong>{{.Title}}</strong></td>
     </tr>
     <tr>
         <td style="vertical-align: top;">Number</td>

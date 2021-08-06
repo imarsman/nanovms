@@ -13,14 +13,26 @@ function getMeta(metaName) {
     return '';
 }
 
+function getMetaNode(metaName) {
+    let metas = document.getElementsByTagName('meta');
+
+    for (let i = 0; i < metas.length; i++) {
+        if (metas[i].getAttribute('name') === metaName) {
+            return metas[i]
+        }
+    }
+
+    return '';
+}
+
 // Run on load
 window.onload = function () {
     document.getElementById("#searchtext")
         .addEventListener("keyup", function (event) {
+            let next = getMeta("search-next")
             if (event.keyCode === 13) {
                 event.preventDefault();
-                // document.getElementById("#searchbutton").click();
-                loadSearch()
+                loadSearch(next)
             }
         });
 };
@@ -30,13 +42,15 @@ function searchForMessages(next) {
 }
 
 function loadSearch(next) {
+    let sn = getMetaNode("search-next")
+    sn.content = next
+
     let token = getMeta(csrfTokenMeta)
     var xmlhttp = new XMLHttpRequest();
 
-    let e = document.getElementById("#searchtext");
-    let value = e.value
+    let st = document.getElementById("#searchtext");
+    let value = st.value
     var url = "/msgsearch?search=" + encodeURIComponent(value) + "&start=" + next
-    // alert("url " + url)
 
     xmlhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
@@ -57,29 +71,3 @@ function processResponse(resp) {
 
     e.innerHTML = resp
 }
-
-// function setImageData(data) {
-//     let id = data['id']
-
-//     let e = document.getElementById("#image-" + id);
-
-//     let date = data['date']
-//     let number = data['number']
-//     let title = data['title']
-//     let altText = data['alttext']
-//     let img = data['img']
-//     // Not finished. Need to get and use delay from server
-//     let delay = data['nextloadms'];
-
-//     reloadSec = data['nextloadms'] / 1000
-//     // &#8212; is an em dash
-//     e.innerHTML = "<img title='" + title + "' src='" + img + "' alt='" + altText + "'/>" +
-//         "<p style='margin:0px 0px 30px 0px'><small style='font-size: .8em'>" + 
-//         date + ' &#8212; "' + title + '"' + " &#8212; reload in " + reloadSec + " sec</small></p>"
-
-
-//     // console.log("id " + id + " Date " + data['date'] + " for " + data['id'] + " delay " + delay)
-//     // Reload same element after delay milliseconds
-//     setTimeout(getImageInfo, delay, id)
-// }
-

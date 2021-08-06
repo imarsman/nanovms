@@ -270,9 +270,23 @@ func fetchSearch(search string, next int) (*ResultSet, error) {
 
 // queryAPI query the PLOS JSON api
 func queryAPI(search string, start int) ([]byte, error) {
-	url := "http://api.plos.org/search?q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
+	search = strings.TrimSpace(search)
+	search, _ = url.QueryUnescape(search)
+	var u string
+	u = "http://api.plos.org/search?"
 
-	resp, err := http.Get(url)
+	isLinkSearch, _ := regexp.MatchString(`^\d+\.\d+\/journal\.[^\.]+\.\d+$`, search)
+	// fmt.Println("search", search, "matched", isLinkSearch)
+
+	if isLinkSearch {
+		u = u + "q=id:\"" + fmt.Sprintf("%v", search) + "\"&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
+		// fmt.Println("u", u)
+	} else {
+		search = url.QueryEscape(search)
+		u = u + "q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
+	}
+
+	resp, err := http.Get(u)
 	if err != nil {
 		return []byte{}, err
 	}

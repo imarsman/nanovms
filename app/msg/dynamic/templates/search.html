@@ -1,45 +1,60 @@
-/*
+{{/*
     The numberings of .Start and items are zero indexed. That is compensated for.
-*/
+*/}}
 
 {{- $len := len .Docs }}
 {{- $end := Sub .Next 1 }}
 {{- $last := Add $end 1 }}
 
 <h3>Search results for "{{ Unescape .SearchTerm}}"</h3>
-<h3>{{- Add .Start 1 }} to {{- Add $end 1 }} of {{ .NumFound }} shown</h3>
+<h3>{{- Add .Start 1 }}&nbsp;to&nbsp;{{- Add $end 1 }}&nbsp;shown&nbsp;of&nbsp;{{- .NumFound }}</h3>
 {{- if .Error }}
     <p>{{ .ErrorMessage }}</p>
 {{- end }}
 {{- if gt (len .Docs) 0 }}
 <table>
+    <tr>
+        <td>
+            {{- if (lt $last .NumFound) }}
+            <a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
+                onMouseOut="this.style.backgroundColor='white'" onclick="searchForMessages({{.Next}})">Next >>></a>
+            {{- end }}
+            {{- if (ge $last .NumFound) }}
+            <strong>End of results</strong>
+            {{- end }}
+        </td>
+    </tr>
+</table>
+{{- $start := .Start }}
+{{- range $i, $a := .Docs}}
+<table>
     <colgroup>
         <col span="1" style="width: 25%;">
         <col span="1" style="width: 75%;">
     </colgroup>
-    {{- $start := .Start }}
-    <tr><td colspan="2">
-    {{- if (lt $last .NumFound) }}
-        <a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
-    onMouseOut="this.style.backgroundColor='white'"
-    onclick="searchForMessages({{.Next}})">Next >>></a>
-    {{- end }}
-    {{- if (ge $last .NumFound) }}
-        <strong>End of results</strong>
-    {{- end }}
-</td></tr>
-{{- range $i, $a := .Docs}}
     {{- $count := Add $i 1 }}
     <tr style="background-color: #AEB6BF; border: 2px solid black;">
         <td colspan="2" style="vertical-align: top;"><strong>{{.Title}}</strong></td>
     </tr>
+    {{- $abst := index .Abstract 0 }}
+    {{- if gt (len $abst) 0 }}
+    <tr>
+        <td colspan="2">{{index .Abstract 0}}</td>
+    </tr>
+    {{- end }}
+    {{- $abst := index .Abstract 0 }}
+    {{- if eq (len $abst) 0 }}
+    <tr>
+        <td colspan="2">No Abstract</td>
+    </tr>
+    {{- end }}
     <tr>
         <td style="vertical-align: top;">Number</td>
         <td>{{ Add $count $start }}</td>
     </tr>
     <tr>
         <td style="vertical-align: top;">ID</td>
-        <td>{{.ID}}</td>
+        <td><a title="{{.ID}}" target="_blank" href="https://doi.org/{{.ID}}" >{{.ID}}</a></td>
     </tr>
     <tr>
         <td style="vertical-align: top;">Journal</td>
@@ -50,14 +65,10 @@
         <td>{{.PublicationDate}}</td>
     </tr>
     <tr>
-        <td style="vertical-align: top;">Abstract</td>
-        <td>{{index .Abstract 0}}</td>
-    </tr>
-    <tr>
         {{- $authorList := StringsJoin .Author ", " }}
         <td style="vertical-align: top;">Authors</td>
         <td>{{ StringsTrim $authorList }}</td>
     </tr>
-{{- end}}
 </table>
+{{- end}}
 {{- end}}

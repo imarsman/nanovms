@@ -55,18 +55,18 @@ var natsServer *server.Server
 
 // Response corresponds to JSON fetched
 type Response struct {
-	ResultSet ResultSet `json:"response"`
+	ResultSet *ResultSet `json:"response"`
 }
 
 // ResultSet a list of results
 type ResultSet struct {
-	SearchTerm   string   `json:"searchTerm"`
-	NumFound     int      `json:"numFound"`
-	Start        int      `json:"start"`
-	Next         int      `json:"next"`
-	Docs         []Result `json:"docs"`
-	Error        bool     `json:"error"`
-	ErrorMessage string   `json:"errormsg"`
+	SearchTerm   string    `json:"searchTerm"`
+	NumFound     int       `json:"numFound"`
+	Start        int       `json:"start"`
+	Next         int       `json:"next"`
+	Docs         []*Result `json:"docs"`
+	Error        bool      `json:"error"`
+	ErrorMessage string    `json:"errormsg"`
 }
 
 // Result a query result
@@ -232,6 +232,13 @@ func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 		return getError(search, err.Error()), nil
 	}
 	rs.Next = rs.Start + len(rs.Docs)
+	for _, r := range rs.Docs {
+		t, err := time.Parse("2006-01-02T15:04:05Z", r.PublicationDate)
+		if err != nil {
+
+		}
+		r.PublicationDate = t.Format("2006-01-02")
+	}
 
 	if len(rs.Docs) == 0 {
 		return getError(search, "Nothing found for search \""+search+"\""), nil
@@ -265,7 +272,7 @@ func fetchSearch(search string, next int) (*ResultSet, error) {
 	response.ResultSet.SearchTerm = search
 	response.ResultSet.Next = response.ResultSet.Start + len(response.ResultSet.Docs)
 
-	return &response.ResultSet, nil
+	return response.ResultSet, nil
 }
 
 // queryAPI query the PLOS JSON api

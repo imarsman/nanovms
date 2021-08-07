@@ -37,12 +37,13 @@
         <td colspan="2" style="vertical-align: top;"><strong>{{.Title}}</strong></td>
     </tr>
     {{- $abst := index .Abstract 0 }}
+    {{- $abst := Headingish $abst }}
+
     {{- if gt (len $abst) 0 }}
     <tr>
-        <td colspan="2">{{index .Abstract 0}}</td>
+        <td colspan="2">{{- $abst }}</td>
     </tr>
     {{- end }}
-    {{- $abst := index .Abstract 0 }}
     {{- if eq (len $abst) 0 }}
     <tr>
         <td colspan="2">No Abstract</td>

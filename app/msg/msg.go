@@ -113,6 +113,9 @@ func NATServer() *server.Server {
 	return natsServer
 }
 
+// HeadingIsh type regexp for abstracts
+var HeadingIsh *regexp.Regexp = regexp.MustCompile(`(?:^|\<\/p\>)\s*([\w\d\/\s]+)(?:<p>)`)
+
 var funcMap = template.FuncMap{
 	"StringsJoin": strings.Join,
 	"StringsTrim": strings.TrimSpace,
@@ -127,6 +130,12 @@ var funcMap = template.FuncMap{
 		if err != nil {
 			return ""
 		}
+		return a
+	},
+	"Headingish": func(a string) string {
+		// fmt.Println("a", a)
+		a = HeadingIsh.ReplaceAllString(a, "<p><strong>$1</strong></p>")
+		// fmt.Println("a", a)
 		return a
 	},
 }
@@ -233,6 +242,11 @@ func QueryNATS(search string, next int, isInCloud bool) ([]byte, error) {
 	}
 	rs.Next = rs.Start + len(rs.Docs)
 	for _, r := range rs.Docs {
+		// if r.Abstract != "" {
+		// 	headingIsh := regexp.MustCompile(`^\s+([\w\d\/]{1,36})\s+$`)
+		// 	r.Abstract = headingIsh.ReplaceAllString(r.Abstract)
+		// }
+
 		t, err := time.Parse("2006-01-02T15:04:05Z", r.PublicationDate)
 		if err != nil {
 

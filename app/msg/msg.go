@@ -282,12 +282,14 @@ func queryAPI(search string, start int) ([]byte, error) {
 	var u string
 	u = "http://api.plos.org/search?"
 
-	isLinkSearch, _ := regexp.MatchString(`^\d+\.\d+\/journal\.[^\.]+\.\d+$`, search)
+	// https://www.crossref.org/blog/dois-and-matching-regular-expressions/
+	// ^10.\d{4,9}/[-._;()/:A-Z0-9]+$
+	isLinkSearch, _ := regexp.MatchString(`^10\.\d{4,9}/[-\._;\(\)\/\:a-zA-Z0-9]+$`, search)
+	// isLinkSearch, _ := regexp.MatchString(`^\d+\.\d+\/journal\.[^\.]+\.\d+$`, search)
 	// fmt.Println("search", search, "matched", isLinkSearch)
 
 	if isLinkSearch {
 		u = u + "q=id:\"" + fmt.Sprintf("%v", search) + "\"&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)
-		// fmt.Println("u", u)
 	} else {
 		search = url.QueryEscape(search)
 		u = u + "q=title:" + fmt.Sprintf("%v", search) + "&fl=id,title,abstract_primary_display,journal,publication_date,author&start=" + fmt.Sprintf("%d", start)

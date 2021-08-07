@@ -1,5 +1,19 @@
 const csrfTokenMeta = "csrf-token"
 
+// Run on load
+window.onload = function () {
+    let btn = document.getElementById("#searchtext")
+    btn.value = "mites"
+    document.getElementById("#searchtext")
+        .addEventListener("keyup", function (event) {
+            let next = getMeta("search-next")
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                loadSearch(next)
+            }
+        });
+};
+
 // getMeta get the value of a meta tag
 function getMeta(metaName) {
     let metas = document.getElementsByTagName('meta');
@@ -24,18 +38,6 @@ function getMetaNode(metaName) {
 
     return '';
 }
-
-// Run on load
-window.onload = function () {
-    document.getElementById("#searchtext")
-        .addEventListener("keyup", function (event) {
-            let next = getMeta("search-next")
-            if (event.keyCode === 13) {
-                event.preventDefault();
-                loadSearch(next)
-            }
-        });
-};
 
 function searchForMessages(next) {
     loadSearch(next)

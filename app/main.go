@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	_ "embed"
 	"fmt"
 	"log"
@@ -15,9 +14,6 @@ import (
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 )
-
-//go:embed static/*
-var static embed.FS
 
 //go:embed .context
 var runContext string

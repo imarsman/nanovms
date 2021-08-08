@@ -16,10 +16,10 @@
 {{- if gt (len .Docs) 0 }}
 <table>
     <tr>
-        <td style="border: 0px;">
+        <td style="border: 0px; padding-left: 0px;">
             {{- if (lt $last .NumFound) }}
             {{- $searchArg:= (printf "searchForMessages(%d)" .Next) }}
-            <a class="next" style="display: inline-block; padding: 8px 16px;"
+            <a class="next rounded-button" display: inline-block; padding: 8px 16px;"
             onclick="{{- $searchArg }}">Next &raquo;</a>
             {{- end }}
             {{- if (ge $last .NumFound) }}

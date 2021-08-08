@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="./css/simple.min.css">
     <meta name="csrf-token" content="{{.CsrfToken}}">
     <meta name="server-address" content="{{.ServerAddress}}">
+    <!-- https://stackoverflow.com/questions/702181/replace-html-table-with-divs
+        https://stackoverflow.com/questions/29229523/how-and-why-to-use-display-table-cell-css
+    -->
 </head>
 <body>
     {{ template "nav.html" . }}

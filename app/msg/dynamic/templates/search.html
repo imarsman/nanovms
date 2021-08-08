@@ -8,9 +8,11 @@
 
 <h3>Search results for "{{ Unescape .SearchTerm}}"</h3>
 <h3>{{- Add .Start 1 }}&nbsp;to&nbsp;{{- Add $end 1 }}&nbsp;shown&nbsp;of&nbsp;{{- .NumFound }}</h3>
+
 {{- if .Error }}
     <p>{{ .ErrorMessage }}</p>
 {{- end }}
+
 {{- if gt (len .Docs) 0 }}
 <table>
     <tr>
@@ -27,6 +29,7 @@
         </td>
     </tr>
 </table>
+
 {{- $start := .Start }}
 {{- range $i, $a := .Docs}}
 <table>
@@ -79,4 +82,5 @@
     </tr>
 </table>
 {{- end}}
+
 {{- end}}

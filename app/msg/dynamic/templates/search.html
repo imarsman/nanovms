@@ -16,8 +16,10 @@
     <tr>
         <td>
             {{- if (lt $last .NumFound) }}
+            {{- $searchArg:= (printf "searchForMessages(%d)" .Next) }}
             <a style="background-color: white; font-size: 1.5em;" onMouseOver="this.style.backgroundColor='#D0ECE7'"
-                onMouseOut="this.style.backgroundColor='white'" onclick="searchForMessages({{.Next}})">Next >>></a>
+            onMouseOut="this.style.backgroundColor='white'"
+            onclick="{{- $searchArg }}">Next >>></a>
             {{- end }}
             {{- if (ge $last .NumFound) }}
             <strong>End of results</strong>

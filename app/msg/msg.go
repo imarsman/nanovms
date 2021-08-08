@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -114,6 +113,7 @@ func NATServer() *server.Server {
 }
 
 // HeadingIsh type regexp for abstracts
+// Not elegant but it works
 var HeadingIsh *regexp.Regexp = regexp.MustCompile(`(?:^|\<\/p\>)\s*([\w\d\/\s]+)(?:<p>)`)
 
 var funcMap = template.FuncMap{
@@ -133,9 +133,7 @@ var funcMap = template.FuncMap{
 		return a
 	},
 	"Headingish": func(a string) string {
-		// fmt.Println("a", a)
 		a = HeadingIsh.ReplaceAllString(a, "<p><strong>$1</strong></p>")
-		// fmt.Println("a", a)
 		return a
 	},
 }
@@ -326,15 +324,20 @@ func queryAPI(search string, start int) ([]byte, error) {
 func ToHTML(rs *ResultSet, isErr bool) (string, error) {
 	buf := new(bytes.Buffer)
 
-	// fmt.Printf("RESULTSET! %+v\n", rs)
 	page := "search.html"
 	if isErr {
 		page = "error.html"
 	}
-	if templates.Lookup(page) != nil {
-		templates.ExecuteTemplate(buf, page, rs)
+	t := templates.Lookup(page)
+	if t != nil {
+		// Not sure clone is needed here
+		t, err := t.Clone()
+		if err != nil {
+			return "", fmt.Errorf("problem getting template for %s", page)
+		}
+		t.Funcs(funcMap).ExecuteTemplate(buf, page, rs)
 	} else {
-		return "", errors.New("Could not find template")
+		return "", fmt.Errorf("problem getting template for %s", page)
 	}
 
 	return buf.String(), nil

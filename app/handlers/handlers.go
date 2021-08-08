@@ -3,6 +3,7 @@ package handlers
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log"
 	"net"
@@ -348,15 +349,34 @@ func TemplatePageHandler(w http.ResponseWriter, r *http.Request) {
 	matches := routeMatch.FindStringSubmatch(r.URL.Path)
 	if len(matches) >= 1 {
 		page := matches[1] + ".html"
-		if templates.Lookup(page) != nil {
-			w.Header().Add("Content-Type", htmlContentType)
-			w.WriteHeader(http.StatusOK)
-			pd.setToken(token)
-			pd.finalize()
 
-			templates.ExecuteTemplate(w, page, pd)
+		t := templates.Lookup(page)
+		if t == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Add("Content-Type", textContentType)
+			w.Write([]byte(fmt.Sprintf("Problem processing page %s", r.URL.Path)))
+
 			return
 		}
+		// Not sure clone is needed here
+		t, err := t.Clone()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Add("Content-Type", textContentType)
+			w.Write([]byte(fmt.Sprintf("Problem processing page %s", r.URL.Path)))
+
+			return
+		}
+
+		w.Header().Add("Content-Type", htmlContentType)
+		w.WriteHeader(http.StatusOK)
+		pd.setToken(token)
+		pd.finalize()
+
+		t.ExecuteTemplate(w, page, pd)
+
+		// templates.ExecuteTemplate(w, page, pd)
+		return
 	} else if r.URL.Path == "/" {
 		w.Header().Add("Content-Type", htmlContentType)
 		w.WriteHeader(http.StatusOK)

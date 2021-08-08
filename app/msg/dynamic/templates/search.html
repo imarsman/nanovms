@@ -36,6 +36,11 @@
     <tr style="background-color: #AEB6BF; border: 2px solid black;">
         <td colspan="2" style="vertical-align: top;"><strong>{{.Title}}</strong></td>
     </tr>
+    {{/*
+        Abstract is an arry of size 1. Get it then do quick regex search/replace
+    for things that look like headings. The PLOS output is reasonably consistent
+    here.
+    */}}
     {{- $abst := index .Abstract 0 }}
     {{- $abst := Headingish $abst }}
 
